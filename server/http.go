@@ -103,7 +103,7 @@ func handlerStatus(w http.ResponseWriter, r *http.Request) {
 	if l > 0 {
 		resp.Total = len(proxies)
 		for _, p := range proxies {
-			for k, _ := range status {
+			for k := range status {
 				if p.Schema == k {
 					status[k]++
 					break

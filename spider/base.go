@@ -132,10 +132,10 @@ func getProxy(s Crawler) {
 			fetchFlag := false
 			parseFlag := false
 			// first try direct
-			logger.WithFields(log.Fields{"url": proxyURL,}).Debug("try fetching url directly")
+			logger.WithFields(log.Fields{"url": proxyURL}).Debug("try fetching url directly")
 			proxyText, err = s.Fetch(proxyURL, nil)
 			if err != nil {
-				logger.WithFields(log.Fields{"url": proxyURL,}).WithError(err).Debug("failed fetching url directly")
+				logger.WithFields(log.Fields{"url": proxyURL}).WithError(err).Debug("failed fetching url directly")
 			} else {
 				fetchFlag = true
 			}
@@ -143,10 +143,10 @@ func getProxy(s Crawler) {
 			if proxyText != "" {
 				newProxies, err = s.Parse(proxyText)
 				if err != nil {
-					logger.WithFields(log.Fields{"url": proxyURL,}).WithError(err).Error("failed parse content by directly")
+					logger.WithFields(log.Fields{"url": proxyURL}).WithError(err).Error("failed parse content by directly")
 				}
 				if len(newProxies) > 0 {
-					logger.WithFields(log.Fields{"url": proxyURL,}).Debug("success directly fetching")
+					logger.WithFields(log.Fields{"url": proxyURL}).Debug("success directly fetching")
 					parseFlag = true
 				}
 			}
