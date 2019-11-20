@@ -47,8 +47,8 @@ func (s *xici) Parse(body string) (proxies []*model.HttpProxy, err error) {
 		port = strings.TrimSpace(port)
 
 		proxies = append(proxies, &model.HttpProxy{
-			Ip:        ip,
-			Port:      port,
+			Ip:   ip,
+			Port: port,
 		})
 
 	}

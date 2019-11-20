@@ -103,8 +103,8 @@ func (s *spys) Parse(body string) (proxies []*model.HttpProxy, err error) {
 				continue
 			}
 			proxies = append(proxies, &model.HttpProxy{
-				Ip:        matchedIp[0],
-				Port:      port,
+				Ip:   matchedIp[0],
+				Port: port,
 			})
 		}
 	}

@@ -67,8 +67,8 @@ func (s *ip89) Parse(body string) (proxies []*model.HttpProxy, err error) {
 			proxyInfo := strings.Split(proxy, ":")
 
 			proxies = append(proxies, &model.HttpProxy{
-				Ip:        proxyInfo[0],
-				Port:      proxyInfo[1],
+				Ip:   proxyInfo[0],
+				Port: proxyInfo[1],
 			})
 		}
 	}

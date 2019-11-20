@@ -72,8 +72,8 @@ contains(@class, 'port')
 		port := strconv.Itoa(portInt)
 
 		proxies = append(proxies, &model.HttpProxy{
-			Ip:        ip,
-			Port:      port,
+			Ip:   ip,
+			Port: port,
 		})
 	}
 	return
