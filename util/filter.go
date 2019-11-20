@@ -32,11 +32,22 @@ func filterOfScore(v int) func(model.HttpProxy) bool {
 		return false
 	}
 }
+func filterOfSource(v string) func(model.HttpProxy) bool {
+	return func(proxy model.HttpProxy) bool {
+		if strings.ToLower(proxy.From) == strings.ToLower(v) {
+			return true
+		}
+		return false
+	}
+}
 
 func GetNewFilter(options map[string]string) (f []func(model.HttpProxy) bool, err error) {
 	for k, v := range options {
 		if k == "schema" && v != "" {
 			f = append(f, filterOfSchema(v))
+		}
+		if k == "source" && v != "" {
+			f = append(f, filterOfSource(v))
 		}
 		if k == "score" && v != "" {
 			i := 0

@@ -168,6 +168,7 @@ func Filter(r *http.Request, resp Resp) (proxies []model.HttpProxy, err error) {
 	cn := r.FormValue("cn")
 	// score above given number
 	score := r.FormValue("score")
+	_source := r.FormValue("source")
 	if err != nil {
 		resp.Error = err.Error()
 	}
@@ -175,6 +176,7 @@ func Filter(r *http.Request, resp Resp) (proxies []model.HttpProxy, err error) {
 		"schema": schema,
 		"cn":     cn,
 		"score":  score,
+		"source": _source,
 	})
 	return
 }
