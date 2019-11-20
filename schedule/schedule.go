@@ -3,7 +3,7 @@ package schedule
 import "C"
 import (
 	"github.com/phpgao/proxy_pool/db"
-	"github.com/phpgao/proxy_pool/model"
+	"github.com/phpgao/proxy_pool/queue"
 	"github.com/phpgao/proxy_pool/spider"
 	"github.com/phpgao/proxy_pool/util"
 	"github.com/robfig/cron/v3"
@@ -64,19 +64,19 @@ func (s *Scheduler) report(spiderKey string) {
 
 }
 
-// write only chan
-func NewScheduler(newChan chan *model.HttpProxy, oldChan chan *model.HttpProxy, db db.Store) *Scheduler {
+func NewScheduler() *Scheduler {
 	s := &Scheduler{
 		cron:    cron.New(),
 		cronMap: make(map[string]cron.EntryID),
 	}
 
-	s.spiders = spider.GetSpiders(newChan)
+	s.spiders = spider.GetSpiders(queue.NewProxyChan)
 
 	internalJob := Internal{
-		channel: oldChan,
-		db:      db,
+		channel: queue.OldProxyChan,
+		db:      db.GetDb(),
 	}
+
 	go internalJob.Run()
 
 	id, err := s.cron.AddJob(config.GetInternalCron(), internalJob)

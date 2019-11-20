@@ -15,7 +15,6 @@ func (i Internal) Run() {
 	proxyCount := len(m)
 	logger.WithField("Count", proxyCount).Info("start internal check")
 	for k := range m {
-		//logger.WithField("proxy", m[k]).Debug("put in old chan")
 		i.channel <- &m[k]
 	}
 }
