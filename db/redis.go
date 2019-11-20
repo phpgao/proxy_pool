@@ -1,9 +1,10 @@
 package db
 
 import (
-	"github.com/phpgao/proxy_pool/model"
 	"github.com/apex/log"
 	"github.com/go-redis/redis/v7"
+	"github.com/phpgao/proxy_pool/model"
+	"github.com/phpgao/proxy_pool/util"
 	"math/rand"
 	"strings"
 	"time"
@@ -153,6 +154,34 @@ func (r *redisDB) GetAll() (proxies []model.HttpProxy) {
 		proxies = append(proxies, newProxy)
 	}
 	return proxies
+}
+
+func (r *redisDB) Get(options map[string]string) (proxies []model.HttpProxy, err error) {
+	all := r.GetAll()
+	filters, err := util.GetNewFilter(options)
+	if err != nil {
+		return
+	}
+	if len(filters) > 0 {
+		for _, p := range all {
+			if Match(filters, p) {
+				proxies = append(proxies, p)
+			}
+		}
+	} else {
+		proxies = all
+	}
+	return
+}
+
+func Match(filters []func(model.HttpProxy) bool, p model.HttpProxy) bool {
+	for _, fc := range filters {
+		if fc(p) == false {
+			return false
+		}
+	}
+
+	return true
 }
 
 func (r *redisDB) Remove(proxy model.HttpProxy) (rs bool, err error) {

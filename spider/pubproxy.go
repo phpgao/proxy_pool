@@ -16,10 +16,6 @@ func (s *PubProxy) StartUrl() []string {
 	}
 }
 
-func (s *PubProxy) RandomDelay() bool {
-	return true
-}
-
 func (s *PubProxy) GetReferer() string {
 	return "http://pubproxy.com/"
 }

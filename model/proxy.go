@@ -5,9 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/apex/log"
 	"github.com/fatih/structs"
-	"github.com/phpgao/proxy_pool/util"
 	"io"
 	"io/ioutil"
 	"net"
@@ -17,10 +15,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-)
-
-var (
-	logger = util.GetLogger()
 )
 
 type HttpProxy struct {
@@ -34,7 +28,6 @@ type HttpProxy struct {
 }
 
 func Make(m map[string]string) (newProxy HttpProxy, err error) {
-	logger.WithField("map", m).Debug("start reflect model")
 	rVal := reflect.ValueOf(&newProxy).Elem()
 	rType := reflect.TypeOf(newProxy)
 	fieldCount := rType.NumField()
@@ -96,7 +89,6 @@ func (p *HttpProxy) SimpleTcpTest() bool {
 		}
 	}()
 	if err != nil {
-		logger.WithError(err).Debug("failed tcp test ")
 		return false
 	} else {
 		return true
@@ -152,14 +144,8 @@ func (p *HttpProxy) TestProxy(https bool) (err error) {
 	if html != p.GetIp() {
 		return errors.New(fmt.Sprintf("error resp"))
 	}
-
 	latency := time.Now().UnixNano() - startAt.UnixNano()
 	p.Latency = int(latency / 1000 / 1000)
-	logger.WithFields(log.Fields{
-		"latency": p.Latency,
-		"proxy":   p.GetProxyUrl(),
-	}, ).Debug("latency")
-
 	if https {
 		p.Schema = "https"
 	} else {

@@ -7,6 +7,7 @@ import (
 	"github.com/phpgao/proxy_pool/db"
 	"github.com/phpgao/proxy_pool/model"
 	"github.com/phpgao/proxy_pool/util"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/signal"
@@ -20,11 +21,16 @@ var (
 	Srv            *http.Server
 )
 
-type JsonResp struct {
-	Code  int               `json:"code"`
-	Error string            `json:"error"`
-	Total int               `json:"total"`
-	Data  []model.HttpProxy `json:"data"`
+var home = "https://github.com/phpgao/proxy_pool"
+
+type Resp struct {
+	Code   int         `json:"code"`
+	Error  string      `json:"error"`
+	Total  int         `json:"total"`
+	Data   interface{} `json:"data"`
+	Home   string      `json:",omitempty"`
+	Get    string      `json:",omitempty"`
+	Random string      `json:",omitempty"`
 }
 
 func Serve() {
@@ -52,19 +58,64 @@ func Serve() {
 
 func GetMux() *http.ServeMux {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/all", handlerAll)
 	mux.HandleFunc("/random", handlerRandom)
+	mux.HandleFunc("/get", handlerQuery)
+	mux.HandleFunc("/", handlerStatus)
 	return mux
 }
 
-func handlerAll(w http.ResponseWriter, _ *http.Request) {
-	proxies := storeEngine.GetAll()
-	resp := JsonResp{
-		Code:  200,
-		Error: "",
-		Total: len(proxies),
-		Data:  proxies,
+func handlerQuery(w http.ResponseWriter, r *http.Request) {
+	resp := Resp{
+		Code: http.StatusOK,
 	}
+	proxies, err := Filter(r, resp)
+	if err != nil {
+		resp.Error = err.Error()
+	} else {
+		resp.Data = proxies
+		resp.Total = len(proxies)
+	}
+
+	respText, err := json.Marshal(resp)
+	if err != nil {
+		resp.Error = err.Error()
+	}
+	_, _ = w.Write(respText)
+}
+
+func handlerStatus(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
+
+	resp := Resp{
+		Code: http.StatusOK,
+	}
+
+	status := map[string]int{
+		"http":  0,
+		"https": 0,
+	}
+
+	proxies := storeEngine.GetAll()
+	l := len(proxies)
+	if l > 0 {
+		resp.Total = len(proxies)
+		for _, p := range proxies {
+			for k, _ := range status {
+				if p.Schema == k {
+					status[k]++
+					break
+				}
+			}
+		}
+	}
+
+	resp.Data = status
+	resp.Home = home
+	resp.Get = "/get?schema=&score="
+	resp.Random = "/random?schema=&score="
 	respText, err := json.Marshal(resp)
 	if err != nil {
 		resp.Code = http.StatusInternalServerError
@@ -75,18 +126,47 @@ func handlerAll(w http.ResponseWriter, _ *http.Request) {
 	_, _ = w.Write(respText)
 }
 
-func handlerRandom(w http.ResponseWriter, _ *http.Request) {
-	randomProxy, err := storeEngine.Random()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+func handlerRandom(w http.ResponseWriter, r *http.Request) {
+	resp := Resp{
+		Code: http.StatusOK,
 	}
-	jsonData, err := json.Marshal(randomProxy)
+	proxies, err := Filter(r, resp)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		resp.Error = err.Error()
+	} else {
+		if len(proxies) > 0 {
+			resp.Data = proxies[rand.Intn(len(proxies))]
+			resp.Total = len(proxies)
+		} else {
+			resp.Data = nil
+			resp.Total = 0
+		}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	_, _ = w.Write(jsonData)
+	respText, err := json.Marshal(resp)
+	if err != nil {
+		resp.Error = err.Error()
+	}
+	_, _ = w.Write(respText)
+}
+
+func Filter(r *http.Request, resp Resp) (proxies []model.HttpProxy, err error) {
+	err = r.ParseForm()
+	// http or https,default all
+	schema := r.FormValue("schema")
+	// ip in China or not
+	// "1" -> China only
+	// else
+	cn := r.FormValue("cn")
+	// score above given number
+	score := r.FormValue("score")
+	if err != nil {
+		resp.Error = err.Error()
+	}
+	proxies, err = storeEngine.Get(map[string]string{
+		"schema": schema,
+		"cn":     cn,
+		"score":  score,
+	})
+	return
 }

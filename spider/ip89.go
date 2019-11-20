@@ -50,10 +50,6 @@ func (s *ip89) Cron() string {
 	return "@every 1m"
 }
 
-func (s *ip89) RandomDelay() bool {
-	return true
-}
-
 func (s *ip89) Name() string {
 	return "ip89"
 }

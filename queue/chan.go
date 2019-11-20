@@ -6,15 +6,15 @@ import (
 )
 
 var (
-	config = util.GetConfig()
+	config       = util.GetConfig()
 	NewProxyChan = make(chan *model.HttpProxy, config.Concurrence)
 	OldProxyChan = make(chan *model.HttpProxy, config.Concurrence)
 )
 
-func GetNewChan() chan *model.HttpProxy{
+func GetNewChan() chan *model.HttpProxy {
 	return NewProxyChan
 }
 
-func GetOldChan() chan *model.HttpProxy{
+func GetOldChan() chan *model.HttpProxy {
 	return OldProxyChan
 }

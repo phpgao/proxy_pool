@@ -2,6 +2,7 @@ package spider
 
 import (
 	"encoding/json"
+	"github.com/apex/log"
 	"sort"
 	"strconv"
 
@@ -34,6 +35,10 @@ func (s *CoolProxy) Name() string {
 	return "cool_proxy"
 }
 
+func (s *CoolProxy) TimeOut() int {
+	return 15
+}
+
 type coolProxy struct {
 	ResponseTimeAverage  float64 `json:"response_time_average"`
 	IP                   string  `json:"ip"`
@@ -51,7 +56,10 @@ func (s *CoolProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	var coolProxies []coolProxy
 	err = json.Unmarshal([]byte(body), &coolProxies)
 	if err != nil {
-		logger.WithError(err).WithField("body", body).Debug("error parse json")
+		logger.WithError(err).WithFields(log.Fields{
+			"body":    body,
+			"timeout": s.TimeOut(),
+		}).Debug("error parse json")
 		return
 	}
 

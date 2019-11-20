@@ -3,12 +3,12 @@ package spider
 import (
 	"errors"
 	"fmt"
-	"github.com/phpgao/proxy_pool/db"
-	"github.com/phpgao/proxy_pool/model"
-	"github.com/phpgao/proxy_pool/util"
 	"github.com/antchfx/htmlquery"
 	"github.com/apex/log"
 	"github.com/parnurzeal/gorequest"
+	"github.com/phpgao/proxy_pool/db"
+	"github.com/phpgao/proxy_pool/model"
+	"github.com/phpgao/proxy_pool/util"
 	"math/rand"
 	"strings"
 	"time"
@@ -80,14 +80,15 @@ func (s *Spider) SetProxyChan(ch chan<- *model.HttpProxy) {
 func (s *Spider) GetProxyChan() chan<- *model.HttpProxy {
 	return s.ch
 }
+
 func (s *Spider) RandomDelay() bool {
-	return false
+	return true
 }
 
 func (s *Spider) Fetch(proxyURL string, proxy *model.HttpProxy) (body string, err error) {
 
 	if s.RandomDelay() {
-		time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
+		time.Sleep(time.Duration(rand.Intn(6)) * time.Second)
 	}
 
 	request := gorequest.New()
@@ -215,7 +216,9 @@ func getProxy(s Crawler) {
 			// user proxy 3 times
 			if parseFlag && fetchFlag {
 				for _, newProxy := range newProxies {
-					inputChan <- newProxy
+					if util.FilterProxy(newProxy) {
+						inputChan <- newProxy
+					}
 				}
 			}
 

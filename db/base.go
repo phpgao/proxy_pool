@@ -2,9 +2,9 @@ package db
 
 import (
 	"fmt"
+	"github.com/go-redis/redis/v7"
 	"github.com/phpgao/proxy_pool/model"
 	"github.com/phpgao/proxy_pool/util"
-	"github.com/go-redis/redis/v7"
 )
 
 var (
@@ -16,6 +16,7 @@ var (
 type Store interface {
 	Init() error
 	GetAll() []model.HttpProxy
+	Get(map[string]string) ([]model.HttpProxy, error)
 	Exists(model.HttpProxy) bool
 	Add(model.HttpProxy) bool
 	Remove(model.HttpProxy) (bool, error)

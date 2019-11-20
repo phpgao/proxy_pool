@@ -2,10 +2,10 @@ package spider
 
 import (
 	"fmt"
-	"github.com/phpgao/proxy_pool/model"
-	"github.com/phpgao/proxy_pool/util"
 	"github.com/antchfx/htmlquery"
 	"github.com/parnurzeal/gorequest"
+	"github.com/phpgao/proxy_pool/model"
+	"github.com/phpgao/proxy_pool/util"
 	"github.com/robertkrimen/otto"
 	"math/rand"
 	"regexp"
@@ -20,6 +20,8 @@ type Spys struct {
 func (s *Spys) StartUrl() []string {
 	return []string{
 		"http://spys.one/en/anonymous-proxy-list/",
+		"http://spys.one/free-proxy-list/CHN/",
+		"http://spys.one/free-proxy-list/US/",
 	}
 }
 

@@ -1,8 +1,8 @@
 package spider
 
 import (
-	"github.com/phpgao/proxy_pool/model"
 	"github.com/antchfx/htmlquery"
+	"github.com/phpgao/proxy_pool/model"
 	"strings"
 )
 
@@ -50,7 +50,7 @@ func (s *feiyi) Parse(body string) (proxies []*model.HttpProxy, err error) {
 		schema = strings.TrimSpace(schema)
 		anonymous = strings.TrimSpace(anonymous)
 		var anonymousInt int
-		if anonymous == "高匿" || anonymous == "普匿"|| anonymous == "透明"{
+		if anonymous == "高匿" || anonymous == "普匿" || anonymous == "透明" {
 			anonymousInt = 1
 		} else {
 			anonymousInt = 0

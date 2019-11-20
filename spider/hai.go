@@ -1,8 +1,8 @@
 package spider
 
 import (
-	"github.com/phpgao/proxy_pool/model"
 	"github.com/antchfx/htmlquery"
+	"github.com/phpgao/proxy_pool/model"
 	"strings"
 )
 
@@ -21,10 +21,6 @@ func (s *IpHai) StartUrl() []string {
 		"http://www.iphai.com/free/wg",
 		"http://www.iphai.com/free/wp",
 	}
-}
-
-func (s *IpHai) RandomDelay() bool {
-	return true
 }
 
 func (s *IpHai) GetReferer() string {

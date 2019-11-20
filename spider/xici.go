@@ -1,8 +1,8 @@
 package spider
 
 import (
-	"github.com/phpgao/proxy_pool/model"
 	"github.com/antchfx/htmlquery"
+	"github.com/phpgao/proxy_pool/model"
 	"strings"
 )
 

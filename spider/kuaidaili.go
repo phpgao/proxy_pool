@@ -1,8 +1,8 @@
 package spider
 
 import (
-	"github.com/phpgao/proxy_pool/model"
 	"github.com/antchfx/htmlquery"
+	"github.com/phpgao/proxy_pool/model"
 	"strings"
 )
 
@@ -31,10 +31,6 @@ func (s *KuaiProxy) Run() {
 
 func (s *KuaiProxy) Name() string {
 	return "Kuai"
-}
-
-func (s *KuaiProxy) RandomDelay() bool {
-	return true
 }
 
 func (s *KuaiProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
