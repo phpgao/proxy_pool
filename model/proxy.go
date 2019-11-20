@@ -5,9 +5,9 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/phpgao/proxy_pool/util"
 	"github.com/apex/log"
 	"github.com/fatih/structs"
+	"github.com/phpgao/proxy_pool/util"
 	"io"
 	"io/ioutil"
 	"net"
@@ -19,11 +19,9 @@ import (
 	"time"
 )
 
-var logger *log.Logger
-
-func init() {
+var (
 	logger = util.GetLogger()
-}
+)
 
 type HttpProxy struct {
 	Ip        string `json:"ip"`

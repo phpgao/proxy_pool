@@ -10,6 +10,15 @@ func OldValidator() {
 	for {
 		ip := <-q
 		go func(ip model.HttpProxy) {
+			key := ip.GetKey()
+			if _, ok := lockMap.Load(key); ok {
+				return
+			}
+
+			lockMap.Store(key, 1)
+			defer func() {
+				lockMap.Delete(key)
+			}()
 			if storeEngine.Exists(ip) {
 				flag := ip.SimpleTcpTest()
 				if flag {

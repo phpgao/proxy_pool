@@ -5,24 +5,36 @@ import (
 	"github.com/phpgao/proxy_pool/model"
 	"github.com/phpgao/proxy_pool/queue"
 	"github.com/phpgao/proxy_pool/util"
+	"sync"
 )
 
 var (
 	config      = util.GetConfig()
 	logger      = util.GetLogger()
 	storeEngine = db.GetDb()
+	lockMap     = sync.Map{}
 )
 
 func NewValidator() {
 	q := queue.GetNewChan()
 	for {
 		proxy := <-q
-		if storeEngine.Exists(*proxy) {
-			logger.WithField("proxy", proxy.GetKey()).WithField(
-				"proxy", proxy.GetProxyUrl()).Debug("skip exists proxy")
-			continue
-		}
 		go func(ip *model.HttpProxy) {
+			key := ip.GetKey()
+			if _, ok := lockMap.Load(key); ok {
+				return
+			}
+
+			lockMap.Store(key, 1)
+			defer func() {
+				lockMap.Delete(key)
+			}()
+
+			if storeEngine.Exists(*proxy) {
+				logger.WithField("proxy", proxy.GetKey()).WithField(
+					"proxy", proxy.GetProxyUrl()).Debug("skip exists proxy")
+				return
+			}
 			if !ip.SimpleTcpTest() {
 				logger.WithField("proxy", proxy.GetProxyUrl()).Debug("failed tcp test")
 				return
