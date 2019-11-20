@@ -1,4 +1,4 @@
-package spider
+package source
 
 import (
 	"github.com/antchfx/htmlquery"
@@ -42,12 +42,10 @@ func (s *feiyi) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	for _, n := range list {
 		ip := htmlquery.InnerText(htmlquery.FindOne(n, "//td[1]"))
 		port := htmlquery.InnerText(htmlquery.FindOne(n, "//td[2]"))
-		schema := htmlquery.InnerText(htmlquery.FindOne(n, "//td[4]"))
 		anonymous := htmlquery.InnerText(htmlquery.FindOne(n, "//td[3]"))
 
 		ip = strings.TrimSpace(ip)
 		port = strings.TrimSpace(port)
-		schema = strings.TrimSpace(schema)
 		anonymous = strings.TrimSpace(anonymous)
 		var anonymousInt int
 		if anonymous == "高匿" || anonymous == "普匿" || anonymous == "透明" {
@@ -55,16 +53,10 @@ func (s *feiyi) Parse(body string) (proxies []*model.HttpProxy, err error) {
 		} else {
 			anonymousInt = 0
 		}
-		if len(schema) == 0 {
-			schema = "http"
-		}
+
 		proxies = append(proxies, &model.HttpProxy{
 			Ip:        ip,
 			Port:      port,
-			Schema:    strings.ToLower(schema),
-			Score:     config.Score,
-			Latency:   0,
-			From:      s.Name(),
 			Anonymous: anonymousInt,
 		})
 	}

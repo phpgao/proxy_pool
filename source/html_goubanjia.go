@@ -1,4 +1,4 @@
-package spider
+package source
 
 import (
 	"github.com/antchfx/htmlquery"
@@ -74,11 +74,6 @@ contains(@class, 'port')
 		proxies = append(proxies, &model.HttpProxy{
 			Ip:        ip,
 			Port:      port,
-			Schema:    "http",
-			Score:     config.Score,
-			Latency:   0,
-			From:      s.Name(),
-			Anonymous: 0,
 		})
 	}
 	return

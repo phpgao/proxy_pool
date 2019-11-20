@@ -1,4 +1,4 @@
-package spider
+package source
 
 import (
 	"github.com/phpgao/proxy_pool/model"
@@ -43,11 +43,6 @@ func (s *jiangxianli) Parse(body string) (proxies []*model.HttpProxy, err error)
 			proxies = append(proxies, &model.HttpProxy{
 				Ip:        proxyInfo[0],
 				Port:      proxyInfo[1],
-				Schema:    "http",
-				Score:     config.Score,
-				Latency:   0,
-				From:      s.Name(),
-				Anonymous: 0,
 			})
 		}
 	}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/phpgao/proxy_pool/db"
 	"github.com/phpgao/proxy_pool/model"
+	"github.com/phpgao/proxy_pool/source"
 	"github.com/phpgao/proxy_pool/util"
 	"math/rand"
 	"net/http"
@@ -27,10 +28,12 @@ type Resp struct {
 	Code   int         `json:"code"`
 	Error  string      `json:"error"`
 	Total  int         `json:"total"`
+	Http   interface{} `json:",omitempty"`
+	Https  interface{} `json:",omitempty"`
 	Data   interface{} `json:"data"`
-	Home   string      `json:",omitempty"`
 	Get    string      `json:",omitempty"`
 	Random string      `json:",omitempty"`
+	Home   string      `json:",omitempty"`
 }
 
 func Serve() {
@@ -93,25 +96,30 @@ func handlerStatus(w http.ResponseWriter, r *http.Request) {
 		Code: http.StatusOK,
 	}
 
-	status := map[string]int{
-		"http":  0,
-		"https": 0,
+	allSpider := source.ListOfSpider
+
+	status := make(map[string]int)
+	for _, s := range allSpider {
+		status[s.Name()] = 0
 	}
+
+	var httpCount, httpsCount int
 
 	proxies := storeEngine.GetAll()
 	l := len(proxies)
 	if l > 0 {
 		resp.Total = len(proxies)
 		for _, p := range proxies {
-			for k := range status {
-				if p.Schema == k {
-					status[k]++
-					break
-				}
+			if p.Schema == "http" {
+				httpCount++
+			} else {
+				httpsCount++
 			}
+			status[p.From] += 1
 		}
 	}
-
+	resp.Http = httpCount
+	resp.Https = httpsCount
 	resp.Data = status
 	resp.Home = home
 	resp.Get = "/get?schema=&score="

@@ -1,4 +1,4 @@
-package spider
+package source
 
 import (
 	"errors"
@@ -214,8 +214,19 @@ func getProxy(s Crawler) {
 
 			// if empty content or failed
 			// user proxy 3 times
+			var tmpMap = map[string]int{}
 			if parseFlag && fetchFlag {
 				for _, newProxy := range newProxies {
+					newProxy.Ip = strings.TrimSpace(newProxy.Ip)
+					newProxy.Port = strings.TrimSpace(newProxy.Port)
+					if _, found := tmpMap[newProxy.GetKey()]; found {
+						continue
+					}
+					tmpMap[newProxy.GetKey()] = 1
+					newProxy.From = s.Name()
+					if newProxy.Score == 0 {
+						newProxy.Score = config.Score
+					}
 					if util.FilterProxy(newProxy) {
 						inputChan <- newProxy
 					}

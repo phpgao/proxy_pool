@@ -1,4 +1,4 @@
-package spider
+package source
 
 import (
 	"github.com/antchfx/htmlquery"
@@ -6,34 +6,34 @@ import (
 	"strings"
 )
 
-type Xici struct {
+type xici struct {
 	Spider
 }
 
-func (s *Xici) Cron() string {
+func (s *xici) Cron() string {
 	return "@every 1m"
 }
 
-func (s *Xici) GetReferer() string {
+func (s *xici) GetReferer() string {
 	return "https://www.xicidaili.com/"
 }
 
-func (s *Xici) StartUrl() []string {
+func (s *xici) StartUrl() []string {
 	return []string{
 		"http://www.xicidaili.com/nn",
 		"http://www.xicidaili.com/wn",
 	}
 }
 
-func (s *Xici) Run() {
+func (s *xici) Run() {
 	getProxy(s)
 }
 
-func (s *Xici) Name() string {
-	return "Xici"
+func (s *xici) Name() string {
+	return "xici"
 }
 
-func (s *Xici) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s *xici) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return
@@ -42,23 +42,13 @@ func (s *Xici) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	for _, n := range list {
 		ip := htmlquery.InnerText(htmlquery.FindOne(n, "//td[2]"))
 		port := htmlquery.InnerText(htmlquery.FindOne(n, "//td[3]"))
-		schema := htmlquery.InnerText(htmlquery.FindOne(n, "//td[6]"))
 
 		ip = strings.TrimSpace(ip)
 		port = strings.TrimSpace(port)
-		schema = strings.TrimSpace(schema)
-		if len(schema) == 0 {
-			schema = "http"
-		}
 
 		proxies = append(proxies, &model.HttpProxy{
 			Ip:        ip,
 			Port:      port,
-			Schema:    strings.ToLower(schema),
-			Score:     config.Score,
-			Latency:   0,
-			From:      s.Name(),
-			Anonymous: 0,
 		})
 
 	}

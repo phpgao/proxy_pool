@@ -1,4 +1,4 @@
-package spider
+package source
 
 import (
 	"github.com/antchfx/htmlquery"
@@ -6,34 +6,34 @@ import (
 	"strings"
 )
 
-type KuaiProxy struct {
+type kuaiProxy struct {
 	Spider
 }
 
-func (s *KuaiProxy) StartUrl() []string {
+func (s *kuaiProxy) StartUrl() []string {
 	return []string{
 		"https://www.kuaidaili.com/free/intr/",
 		"https://www.kuaidaili.com/free/inha/",
 	}
 }
 
-func (s *KuaiProxy) Cron() string {
+func (s *kuaiProxy) Cron() string {
 	return "@every 1m"
 }
 
-func (s *KuaiProxy) GetReferer() string {
+func (s *kuaiProxy) GetReferer() string {
 	return "https://www.kuaidaili.com/"
 }
 
-func (s *KuaiProxy) Run() {
+func (s *kuaiProxy) Run() {
 	getProxy(s)
 }
 
-func (s *KuaiProxy) Name() string {
+func (s *kuaiProxy) Name() string {
 	return "Kuai"
 }
 
-func (s *KuaiProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s *kuaiProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return
@@ -43,12 +43,11 @@ func (s *KuaiProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	for _, n := range list {
 		ip := htmlquery.InnerText(htmlquery.FindOne(n, "//td[1]"))
 		port := htmlquery.InnerText(htmlquery.FindOne(n, "//td[2]"))
-		schema := htmlquery.InnerText(htmlquery.FindOne(n, "//td[4]"))
 		anonymous := htmlquery.InnerText(htmlquery.FindOne(n, "//td[3]"))
 
 		ip = strings.TrimSpace(ip)
 		port = strings.TrimSpace(port)
-		schema = strings.TrimSpace(schema)
+
 		anonymous = strings.TrimSpace(anonymous)
 		var anonymousInt int
 		if anonymous == "高匿名" {
@@ -56,16 +55,10 @@ func (s *KuaiProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
 		} else {
 			anonymousInt = 0
 		}
-		if len(schema) == 0 {
-			schema = "http"
-		}
+
 		proxies = append(proxies, &model.HttpProxy{
 			Ip:        ip,
 			Port:      port,
-			Schema:    strings.ToLower(schema),
-			Score:     config.Score,
-			Latency:   0,
-			From:      s.Name(),
 			Anonymous: anonymousInt,
 		})
 	}

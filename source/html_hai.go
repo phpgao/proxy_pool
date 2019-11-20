@@ -1,4 +1,4 @@
-package spider
+package source
 
 import (
 	"github.com/antchfx/htmlquery"
@@ -45,22 +45,13 @@ func (s *IpHai) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	for _, n := range list {
 		ip := htmlquery.InnerText(htmlquery.FindOne(n, "//td[1]"))
 		port := htmlquery.InnerText(htmlquery.FindOne(n, "//td[2]"))
-		schema := htmlquery.InnerText(htmlquery.FindOne(n, "//td[4]"))
 
 		ip = strings.TrimSpace(ip)
 		port = strings.TrimSpace(port)
-		schema = strings.TrimSpace(schema)
-		if len(schema) == 0 {
-			schema = "http"
-		}
+
 		proxies = append(proxies, &model.HttpProxy{
 			Ip:        ip,
 			Port:      port,
-			Schema:    strings.ToLower(schema),
-			Score:     config.Score,
-			Latency:   0,
-			From:      s.Name(),
-			Anonymous: 0,
 		})
 	}
 

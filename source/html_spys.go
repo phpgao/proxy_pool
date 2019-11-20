@@ -1,4 +1,4 @@
-package spider
+package source
 
 import (
 	"fmt"
@@ -13,11 +13,11 @@ import (
 	"time"
 )
 
-type Spys struct {
+type spys struct {
 	Spider
 }
 
-func (s *Spys) StartUrl() []string {
+func (s *spys) StartUrl() []string {
 	return []string{
 		"http://spys.one/en/anonymous-proxy-list/",
 		"http://spys.one/free-proxy-list/CHN/",
@@ -25,23 +25,23 @@ func (s *Spys) StartUrl() []string {
 	}
 }
 
-func (s *Spys) Cron() string {
+func (s *spys) Cron() string {
 	return "@every 1m"
 }
 
-func (s *Spys) Name() string {
+func (s *spys) Name() string {
 	return "spys"
 }
 
-func (s *Spys) GetReferer() string {
+func (s *spys) GetReferer() string {
 	return "http://spys.one/en/anonymous-proxy-list/"
 }
 
-func (s *Spys) Run() {
+func (s *spys) Run() {
 	getProxy(s)
 }
 
-func (s *Spys) Fetch(proxyURL string, proxy *model.HttpProxy) (body string, err error) {
+func (s *spys) Fetch(proxyURL string, proxy *model.HttpProxy) (body string, err error) {
 
 	if s.RandomDelay() {
 		time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
@@ -72,7 +72,7 @@ func (s *Spys) Fetch(proxyURL string, proxy *model.HttpProxy) (body string, err 
 	return
 }
 
-func (s *Spys) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s *spys) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return
@@ -94,7 +94,6 @@ func (s *Spys) Parse(body string) (proxies []*model.HttpProxy, err error) {
 
 	for _, n := range list {
 		ipText := htmlquery.InnerText(htmlquery.FindOne(n, "//td[1]"))
-		schema := htmlquery.InnerText(htmlquery.FindOne(n, "//td[2]"))
 		re := regexp.MustCompile(`\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}`)
 		matchedIp := re.FindAllString(ipText, -1)
 		if len(matchedIp) > 0 {
@@ -106,11 +105,6 @@ func (s *Spys) Parse(body string) (proxies []*model.HttpProxy, err error) {
 			proxies = append(proxies, &model.HttpProxy{
 				Ip:        matchedIp[0],
 				Port:      port,
-				Schema:    strings.ToLower(schema),
-				Score:     config.Score,
-				Latency:   0,
-				From:      s.Name(),
-				Anonymous: 0,
 			})
 		}
 	}

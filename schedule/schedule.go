@@ -4,13 +4,13 @@ import "C"
 import (
 	"github.com/phpgao/proxy_pool/db"
 	"github.com/phpgao/proxy_pool/queue"
-	"github.com/phpgao/proxy_pool/spider"
+	"github.com/phpgao/proxy_pool/source"
 	"github.com/phpgao/proxy_pool/util"
 	"github.com/robfig/cron/v3"
 )
 
 type Scheduler struct {
-	spiders []spider.Crawler
+	spiders []source.Crawler
 	cronMap map[string]cron.EntryID
 	cron    *cron.Cron
 }
@@ -70,7 +70,7 @@ func NewScheduler() *Scheduler {
 		cronMap: make(map[string]cron.EntryID),
 	}
 
-	s.spiders = spider.GetSpiders(queue.NewProxyChan)
+	s.spiders = source.GetSpiders(queue.NewProxyChan)
 
 	internalJob := Internal{
 		channel: queue.OldProxyChan,

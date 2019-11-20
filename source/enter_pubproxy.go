@@ -1,38 +1,38 @@
-package spider
+package source
 
 import (
 	"github.com/phpgao/proxy_pool/model"
 	"strings"
 )
 
-type PubProxy struct {
+type pubProxy struct {
 	Spider
 }
 
-func (s *PubProxy) StartUrl() []string {
+func (s *pubProxy) StartUrl() []string {
 	return []string{
 		"http://pubproxy.com/api/proxy?limit=5&format=txt&type=http&level=anonymous&last_check=60&no_country=CN",
 		"http://pubproxy.com/api/proxy?limit=5&format=txt&type=http&level=anonymous&last_check=60&country=CN",
 	}
 }
 
-func (s *PubProxy) GetReferer() string {
+func (s *pubProxy) GetReferer() string {
 	return "http://pubproxy.com/"
 }
 
-func (s *PubProxy) Cron() string {
+func (s *pubProxy) Cron() string {
 	return "@every 1m"
 }
 
-func (s *PubProxy) Name() string {
+func (s *pubProxy) Name() string {
 	return "pub"
 }
 
-func (s *PubProxy) Run() {
+func (s *pubProxy) Run() {
 	getProxy(s)
 }
 
-func (s *PubProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s *pubProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	proxyStrings := strings.Split(body, "\n")
 	for _, proxy := range proxyStrings {
 		if strings.Contains(proxy, ":") {
@@ -40,11 +40,6 @@ func (s *PubProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
 			proxies = append(proxies, &model.HttpProxy{
 				Ip:        proxyInfo[0],
 				Port:      proxyInfo[1],
-				Schema:    "http",
-				Score:     config.Score,
-				Latency:   0,
-				From:      s.Name(),
-				Anonymous: 0,
 			})
 		}
 	}

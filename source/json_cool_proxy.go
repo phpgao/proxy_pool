@@ -1,4 +1,4 @@
-package spider
+package source
 
 import (
 	"encoding/json"
@@ -9,37 +9,37 @@ import (
 	"github.com/phpgao/proxy_pool/model"
 )
 
-type CoolProxy struct {
+type coolProxy struct {
 	Spider
 }
 
-func (s *CoolProxy) StartUrl() []string {
+func (s *coolProxy) StartUrl() []string {
 	return []string{
 		"https://cool-proxy.net/proxies.json",
 	}
 }
 
-func (s *CoolProxy) GetReferer() string {
+func (s *coolProxy) GetReferer() string {
 	return "https://cool-proxy.net"
 }
 
-func (s *CoolProxy) Run() {
+func (s *coolProxy) Run() {
 	getProxy(s)
 }
 
-func (s *CoolProxy) Cron() string {
+func (s *coolProxy) Cron() string {
 	return "@every 1m"
 }
 
-func (s *CoolProxy) Name() string {
+func (s *coolProxy) Name() string {
 	return "cool_proxy"
 }
 
-func (s *CoolProxy) TimeOut() int {
+func (s *coolProxy) TimeOut() int {
 	return 15
 }
 
-type coolProxy struct {
+type coolProxyJson struct {
 	ResponseTimeAverage  float64 `json:"response_time_average"`
 	IP                   string  `json:"ip"`
 	Score                float64 `json:"score"`
@@ -52,8 +52,8 @@ type coolProxy struct {
 	DownloadSpeedAverage float64 `json:"download_speed_average"`
 }
 
-func (s *CoolProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
-	var coolProxies []coolProxy
+func (s *coolProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
+	var coolProxies []coolProxyJson
 	err = json.Unmarshal([]byte(body), &coolProxies)
 	if err != nil {
 		logger.WithError(err).WithFields(log.Fields{
@@ -75,10 +75,6 @@ func (s *CoolProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
 		proxies = append(proxies, &model.HttpProxy{
 			Ip:        proxy.IP,
 			Port:      strconv.Itoa(proxy.Port),
-			Schema:    "http",
-			Score:     config.Score,
-			Latency:   0,
-			From:      s.Name(),
 			Anonymous: proxy.Anonymous,
 		})
 	}
