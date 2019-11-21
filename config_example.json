@@ -8,6 +8,5 @@
   },
   "checkinterval": 90,
   "debug": false,
-  "timeout": 10,
-  "port": 8080
+  "timeout": 10
 }

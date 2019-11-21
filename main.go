@@ -21,6 +21,6 @@ func main() {
 		go validator.NewValidator()
 		go validator.OldValidator()
 	}
-
+	go server.ServeReverse()
 	server.Serve()
 }
