@@ -31,19 +31,16 @@ func NewValidator() {
 			}()
 
 			if storeEngine.Exists(*proxy) {
-				logger.WithField("proxy", proxy.GetKey()).WithField(
-					"proxy", proxy.GetProxyUrl()).Debug("skip exists proxy")
 				return
 			}
-			if !ip.SimpleTcpTest() {
-				logger.WithField("proxy", proxy.GetProxyUrl()).Debug("failed tcp test")
+			if !ip.SimpleTcpTest(config.GetTcpTestTimeOut()) {
 				return
 			}
 			// http test
 			err := ip.TestProxy(false)
 			if err != nil {
 				logger.WithError(err).WithField(
-					"proxy", ip.GetProxyUrl()).Debug("error when test http proxy")
+					"proxy", ip.GetProxyUrl()).Debug("error test http proxy")
 			} else {
 
 				logger.WithField("proxy", ip.GetProxyUrl()).WithField(
@@ -52,7 +49,7 @@ func NewValidator() {
 				err := ip.TestProxy(true)
 				if err != nil {
 					logger.WithError(err).WithField(
-						"proxy", ip.GetProxyUrl()).Debug("error when test https proxy")
+						"proxy", ip.GetProxyUrl()).Debug("error test https proxy")
 				}
 				storeEngine.Add(*ip)
 			}

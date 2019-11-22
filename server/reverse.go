@@ -78,7 +78,7 @@ func handleClientRequest(client net.Conn) {
 		server, err = tryExchange(serverAddr, schema, connString)
 		if err != nil {
 			if !os.IsTimeout(err) {
-				logger.WithField("serverAddr", serverAddr).WithError(err).Error("fatal error when establish connect")
+				logger.WithField("serverAddr", serverAddr).WithError(err).Error("fatal error establish connect")
 			} else {
 				logger.WithField("serverAddr", serverAddr).WithError(err).Error("timeout")
 			}

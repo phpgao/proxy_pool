@@ -33,7 +33,7 @@ func (s *Scheduler) Run() {
 		cronID, err := s.cron.AddJob(_spider.Cron(), _spider)
 
 		if err != nil {
-			logger.WithError(err).Errorf("Error when add cron with spider %s", _spider.Name())
+			logger.WithError(err).Errorf("error add cron with spider %s", _spider.Name())
 		}
 		s.cronMap[_spider.Name()] = cronID
 	}
@@ -82,7 +82,7 @@ func NewScheduler() *Scheduler {
 	id, err := s.cron.AddJob(config.GetInternalCron(), internalJob)
 
 	if err != nil {
-		logger.WithError(err).Error("error when init internal job")
+		logger.WithError(err).Error("error init internal job")
 	}
 	s.cronMap["internal"] = id
 	return s

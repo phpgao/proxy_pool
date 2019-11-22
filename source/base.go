@@ -146,7 +146,6 @@ func getProxy(s Crawler) {
 					logger.WithFields(log.Fields{"url": proxyURL}).WithError(err).Error("failed parse content by directly")
 				}
 				if len(newProxies) > 0 {
-					logger.WithFields(log.Fields{"url": proxyURL}).Debug("success directly fetching")
 					parseFlag = true
 				}
 			}

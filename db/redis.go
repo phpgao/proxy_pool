@@ -1,7 +1,6 @@
 package db
 
 import (
-	"github.com/apex/log"
 	"github.com/go-redis/redis/v7"
 	"github.com/phpgao/proxy_pool/model"
 	"github.com/phpgao/proxy_pool/util"
@@ -19,12 +18,12 @@ type redisDB struct {
 func (r *redisDB) Test() bool {
 	pong, err := r.client.Ping().Result()
 	if err != nil {
-		logger.WithError(err).Error("error when add proxy")
+		logger.WithError(err).Error("error add proxy")
 		return false
 	}
 
 	if pong != "PONG" {
-		logger.WithField("pong", pong).Error("error when connecting to redis")
+		logger.WithField("pong", pong).Error("error connecting to redis")
 		return false
 	}
 	return true
@@ -51,20 +50,20 @@ func (r *redisDB) Add(proxy model.HttpProxy) bool {
 	if !r.KeyExists(key) {
 		err := r.client.HMSet(key, proxy.GetProxyHash()).Err()
 		if err != nil {
-			logger.WithError(err).Error("error when add proxy")
+			logger.WithError(err).Error("error add proxy")
 			return false
 		}
 	} else {
 		err := r.AddScore(proxy, 10)
 		if err != nil {
-			logger.WithError(err).Error("error when add Score")
+			logger.WithError(err).Error("error add Score")
 			return false
 		}
 	}
 	// add ttl
 	err := r.ExpireDefault(key)
 	if err != nil {
-		logger.WithError(err).Error("error when setting expire")
+		logger.WithError(err).Error("error setting expire")
 		return false
 	}
 
@@ -75,7 +74,6 @@ func (r *redisDB) Expire(key string, expiration time.Duration) error {
 	return r.client.Expire(key, expiration).Err()
 }
 func (r *redisDB) SetScore(key string, score int) error {
-	logger.WithField("key", key).WithField("score", score).Debug("setting score")
 	return r.client.HSet(key, "Score", score).Err()
 }
 func (r *redisDB) GetScore(key string) int {
@@ -99,11 +97,6 @@ func (r *redisDB) AddScore(p model.HttpProxy, score int) (err error) {
 
 	v := r.GetScore(key)
 	rs := v + score
-	logger.WithFields(log.Fields{
-		"key":   key,
-		"score": score,
-		"rs":    rs,
-	}).WithField("rs", rs).Debug("adding score")
 
 	if rs <= 0 {
 		err = r.client.Del(key).Err()
@@ -148,7 +141,7 @@ func (r *redisDB) GetAll() (proxies []model.HttpProxy) {
 		//logger.WithField("proxy", proxy).Info("get all proxy")
 		newProxy, err := model.Make(proxy)
 		if err != nil {
-			logger.WithError(err).Error("error when create proxy from map")
+			logger.WithError(err).Error("error create proxy from map")
 			continue
 		}
 		proxies = append(proxies, newProxy)
@@ -189,7 +182,7 @@ func (r *redisDB) Remove(proxy model.HttpProxy) (rs bool, err error) {
 	if r.KeyExists(key) {
 		err = r.client.Del(key).Err()
 		if err != nil {
-			logger.WithError(err).WithField("key", key).Error("error when deleting key")
+			logger.WithError(err).WithField("key", key).Error("error deleting key")
 			return false, err
 		}
 	}
@@ -204,7 +197,7 @@ func (r *redisDB) Random() (p model.HttpProxy, err error) {
 	}, ":")
 	keys, err := r.client.Keys(keyPattern).Result()
 	if err != nil {
-		logger.WithError(err).WithField("keys", keys).Error("error when get keys from redis")
+		logger.WithError(err).WithField("keys", keys).Error("error get keys from redis")
 		return
 	}
 	//rand.Seed(time.Now().Unix())
@@ -213,7 +206,7 @@ func (r *redisDB) Random() (p model.HttpProxy, err error) {
 	//logger.WithField("proxy", proxy).Info("get all proxy")
 	newProxy, err := model.Make(proxy)
 	if err != nil {
-		logger.WithError(err).Error("error when create proxy from map")
+		logger.WithError(err).Error("error create proxy from map")
 		return
 	}
 	return newProxy, nil

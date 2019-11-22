@@ -20,21 +20,15 @@ func OldValidator() {
 				lockMap.Delete(key)
 			}()
 			if storeEngine.Exists(ip) {
-				flag := ip.SimpleTcpTest()
+				var score = -30
+				flag := ip.SimpleTcpTest(config.GetTcpTestTimeOut())
 				if flag {
-					err := ip.TestProxy(false)
-					if err == nil {
-						err = storeEngine.AddScore(ip, 10)
-						if err != nil {
-							logger.WithError(err).WithField("proxy", ip.GetProxyUrl()).Error("error add score")
-						}
-						return
-					}
+					score = 10
 				}
-				err := storeEngine.AddScore(ip, -20)
+				err := storeEngine.AddScore(ip, score)
 				if err != nil {
 					logger.WithError(err).WithField(
-						"proxy", ip.GetProxyUrl()).Error("error when add score")
+						"proxy", ip.GetProxyUrl()).Error("error setting score")
 				}
 			}
 		}(*ip)

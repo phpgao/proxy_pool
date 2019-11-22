@@ -81,8 +81,8 @@ func (p *HttpProxy) GetPort() string {
 	return p.Port
 }
 
-func (p *HttpProxy) SimpleTcpTest() bool {
-	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%s", p.Ip, p.Port), 3*time.Second)
+func (p *HttpProxy) SimpleTcpTest(timeOut time.Duration) bool {
+	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%s", p.Ip, p.Port), timeOut)
 	defer func() {
 		if conn != nil {
 			_ = conn.Close()
