@@ -42,9 +42,6 @@ func NewValidator() {
 				logger.WithError(err).WithField(
 					"proxy", ip.GetProxyUrl()).Debug("error test http proxy")
 			} else {
-
-				logger.WithField("proxy", ip.GetProxyUrl()).WithField(
-					"key", ip.GetKey()).Info("valid proxy")
 				// https test
 				err := ip.TestProxy(true)
 				if err != nil {

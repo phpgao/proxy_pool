@@ -15,7 +15,10 @@ import (
 )
 
 func ServeReverse() {
-	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", config.ProxyBind, config.ProxyPort))
+	addr := fmt.Sprintf("%s:%d", config.ProxyBind, config.ProxyPort)
+	logger.WithField("addr", addr).Info("listen and serve")
+
+	l, err := net.Listen("tcp", addr)
 	if err != nil {
 		logger.WithError(err).Fatal("ServeReverse")
 	}
