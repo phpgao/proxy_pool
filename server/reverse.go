@@ -11,7 +11,6 @@ import (
 	//"math/rand"
 	"net"
 	"net/url"
-	"os"
 	"time"
 )
 
@@ -58,7 +57,8 @@ func handleClientRequest(client net.Conn) {
 	var schema = "http"
 	if hostPortURL.Opaque == "443" {
 		schema = "https"
-		connString = fmt.Sprintf("%s %s %s\r\n\r\n", method, host, version)
+		// CONNECT cip.cc:443 HTTP/1.1\r\nHost: cip.cc:443\r\nUser-Agent: curl/7.64.1\r\nProxy-Connection: Keep-Alive\r\n\r\n
+		connString = fmt.Sprintf("%s %s %s\r\nHost: %s\r\nProxy-Connection: Keep-Alive\r\n\r\n", method, host, version, host)
 	}
 
 	proxies, err := storeEngine.Get(map[string]string{
@@ -76,19 +76,23 @@ func handleClientRequest(client net.Conn) {
 	var server net.Conn
 	server, err = tryExchange(schema, connString)
 	if err != nil {
-		if !os.IsTimeout(err) {
-			logger.WithError(err).Error("fatal error establish connect")
-		} else {
-			logger.WithError(err).Error("timeout")
+		//if !os.IsTimeout(err) {
+		//	logger.WithError(err).Error("fatal error establish connect")
+		//} else {
+		//	logger.WithError(err).Error("timeout")
+		//}
+		logger.WithError(err).Error("fatal error establish connect")
+		if pc, ok := server.(*pool.PoolConn); ok {
+			pc.MarkUnusable()
+			_ = pc.Close()
 		}
 		return
 	}
-	if server == nil {
-		return
-	}
+
 	defer server.Close()
 	if method == "CONNECT" {
-		_, err = fmt.Fprint(client, "HTTP/1.1 200 Connection established\r\n\r\n")
+		//_, err = fmt.Fprint(client, "HTTP/1.1 200 Connection established\r\n\r\n")
+		_, err = client.Write([]byte("HTTP/1.1 200 Connection established\r\n\r\n"))
 		if err != nil {
 			logger.WithError(err).Error("CONNECT")
 		}
@@ -110,33 +114,38 @@ func handleClientRequest(client net.Conn) {
 		buf := make([]byte, 2048)
 		_, err := io.CopyBuffer(server, client, buf)
 		if err != nil {
-
-			logger.WithError(err).Error("error io.Copy goroutine")
+			if pc, ok := server.(*pool.PoolConn); ok {
+				pc.MarkUnusable()
+				pc.Close()
+			}
+			logger.WithError(err).Debug("error io.Copy goroutine")
 		}
-		if pc, ok := server.(*pool.PoolConn); ok {
-			pc.MarkUnusable()
-			logger.Warn("MarkUnusable goroutine")
 
-			pc.Close()
-		}
 	}()
 	buf := make([]byte, 2048)
-	_, err = io.CopyBuffer(client, server, buf)
-	if err != nil {
-		logger.WithError(err).Error("error io.Copy outside")
-	}
-	if pc, ok := server.(*pool.PoolConn); ok {
-		pc.MarkUnusable()
-		logger.Warn("MarkUnusable")
 
-		pc.Close()
+	_, err = io.CopyBuffer(client, server, buf)
+
+	if err != nil {
+		logger.WithError(err).Debug("error io.Copy outside")
+		if pc, ok := server.(*pool.PoolConn); ok {
+			pc.MarkUnusable()
+			pc.Close()
+		}
 	}
+
 	logger.WithField("chan", ppool.Http.Len()).Error("len")
+
 	return
 }
 
 func tryExchange(schema, connString string) (server net.Conn, err error) {
-	server, err = ppool.Http.Get()
+	if schema == "http" {
+		server, err = ppool.Http.Get()
+	} else {
+		server, err = ppool.Https.Get()
+	}
+
 	if err != nil {
 		return
 	}
@@ -149,10 +158,12 @@ func tryExchange(schema, connString string) (server net.Conn, err error) {
 
 	if schema == "https" {
 		// need to send connect again
-		_, err = fmt.Fprint(server, connString)
+
+		_, err = server.Write([]byte(connString))
 		if err != nil {
 			return
 		}
+
 		// read 200 code
 		var mb [1024]byte
 		if err = server.SetReadDeadline(time.Now().Add(time.Duration(config.ProxyTimeout) * time.Second)); err != nil {
