@@ -9,6 +9,7 @@ require (
 	github.com/corpix/uarand v0.1.0
 	github.com/elazarl/goproxy v0.0.0-20190711103511-473e67f1d7d2 // indirect
 	github.com/elazarl/goproxy/ext v0.0.0-20190711103511-473e67f1d7d2 // indirect
+	github.com/fatih/pool v3.0.0+incompatible
 	github.com/fatih/structs v1.1.0
 	github.com/go-redis/redis/v7 v7.0.0-beta.4
 	github.com/golang/groupcache v0.0.0-20191027212112-611e8accdfc9 // indirect

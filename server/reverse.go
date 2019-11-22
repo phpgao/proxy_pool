@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/fatih/pool"
+	"github.com/phpgao/proxy_pool/ppool"
 	"io"
 	"log"
-	"math/rand"
+	//"math/rand"
 	"net"
 	"net/url"
 	"os"
 	"time"
-	//"strings"
 )
 
 func ServeReverse() {
@@ -73,23 +74,14 @@ func handleClientRequest(client net.Conn) {
 		return
 	}
 	var server net.Conn
-	for i := 1; i < config.Retry+1; i++ {
-
-		p := proxies[rand.Intn(l)]
-		serverAddr := p.GetProxyUrl()
-		logger.WithField("time", i).WithField("serverAddr", serverAddr).Debug("try connect server")
-		server, err = tryExchange(serverAddr, schema, connString)
-		if err != nil {
-			if !os.IsTimeout(err) {
-				logger.WithField("serverAddr", serverAddr).WithError(err).Error("fatal error establish connect")
-			} else {
-				logger.WithField("serverAddr", serverAddr).WithError(err).Error("timeout")
-			}
-			continue
+	server, err = tryExchange(schema, connString)
+	if err != nil {
+		if !os.IsTimeout(err) {
+			logger.WithError(err).Error("fatal error establish connect")
+		} else {
+			logger.WithError(err).Error("timeout")
 		}
-
-		break
-
+		return
 	}
 	if server == nil {
 		return
@@ -101,27 +93,60 @@ func handleClientRequest(client net.Conn) {
 			logger.WithError(err).Error("CONNECT")
 		}
 	} else {
-		//_, _ = fmt.Fprint(server, connString+"\r\n")
 		_, err = server.Write(b[:n])
 		if err != nil {
 			logger.WithError(err).Error("Write")
+			if pc, ok := server.(*pool.PoolConn); ok {
+				pc.MarkUnusable()
+				pc.Close()
+			}
+			return
 		}
 	}
 
-	go io.Copy(server, client)
-	_, err = io.Copy(client, server)
+	go func() {
+		defer server.Close()
+		defer client.Close()
+		buf := make([]byte, 2048)
+		_, err := io.CopyBuffer(server, client, buf)
+		if err != nil {
+
+			logger.WithError(err).Error("error io.Copy goroutine")
+		}
+		if pc, ok := server.(*pool.PoolConn); ok {
+			pc.MarkUnusable()
+			logger.Warn("MarkUnusable goroutine")
+
+			pc.Close()
+		}
+	}()
+	buf := make([]byte, 2048)
+	_, err = io.CopyBuffer(client, server, buf)
 	if err != nil {
-		logger.WithError(err).Error("io.Copy")
+		logger.WithError(err).Error("error io.Copy outside")
 	}
-	logger.Debug("closed")
+	if pc, ok := server.(*pool.PoolConn); ok {
+		pc.MarkUnusable()
+		logger.Warn("MarkUnusable")
+
+		pc.Close()
+	}
+	logger.WithField("chan", ppool.Http.Len()).Error("len")
 	return
 }
 
-func tryExchange(serverAddr, schema, connString string) (server net.Conn, err error) {
-	server, err = net.DialTimeout("tcp", serverAddr, time.Duration(config.TcpTimeout)*time.Second)
+func tryExchange(schema, connString string) (server net.Conn, err error) {
+	server, err = ppool.Http.Get()
 	if err != nil {
 		return
 	}
+
+	if server == nil {
+		logger.WithField("server.RemoteAddr()", server).WithField("err", err).Debug("server")
+		err = errors.New("nil server")
+		return
+	}
+
 	if schema == "https" {
 		// need to send connect again
 		_, err = fmt.Fprint(server, connString)
