@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 )
 
 var (
@@ -28,8 +29,8 @@ type Resp struct {
 	Code   int         `json:"code"`
 	Error  string      `json:"error"`
 	Total  int         `json:"total"`
-	Http   interface{} `json:",omitempty"`
-	Https  interface{} `json:",omitempty"`
+	Schema interface{} `json:",omitempty"`
+	Score  interface{} `json:",omitempty"`
 	Data   interface{} `json:"data"`
 	Get    string      `json:",omitempty"`
 	Random string      `json:",omitempty"`
@@ -103,8 +104,8 @@ func handlerStatus(w http.ResponseWriter, r *http.Request) {
 	for _, s := range allSpider {
 		status[s.Name()] = 0
 	}
-
-	var httpCount, httpsCount int
+	scores := make(map[string]int)
+	schema := make(map[string]int)
 
 	proxies := storeEngine.GetAll()
 	l := len(proxies)
@@ -112,16 +113,17 @@ func handlerStatus(w http.ResponseWriter, r *http.Request) {
 		resp.Total = len(proxies)
 		for _, p := range proxies {
 			if p.Schema == "http" {
-				httpCount++
+				setDefault(schema, "http", 0, 1)
 			} else {
-				httpsCount++
+				setDefault(schema, "https", 0, 1)
 			}
 			status[p.From] += 1
+			setDefault(scores, strconv.Itoa(p.Score), 0, 1)
 		}
 	}
-	resp.Http = httpCount
-	resp.Https = httpsCount
+	resp.Schema = schema
 	resp.Data = status
+	resp.Score = scores
 	resp.Home = home
 	resp.Get = "/get?schema=&score="
 	resp.Random = "/random?schema=&score="
@@ -179,5 +181,14 @@ func Filter(r *http.Request, resp Resp) (proxies []model.HttpProxy, err error) {
 		"score":  score,
 		"source": _source,
 	})
+	return
+}
+
+func setDefault(h map[string]int, k string, v, inc int) (set bool, r int) {
+	if _, set = h[k]; !set {
+		h[k] = v
+		set = true
+	}
+	h[k] += inc
 	return
 }
