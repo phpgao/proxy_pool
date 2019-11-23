@@ -18,7 +18,7 @@ func (s *kuaiProxy) StartUrl() []string {
 }
 
 func (s *kuaiProxy) Cron() string {
-	return "@every 1m"
+	return "@every 30m"
 }
 
 func (s *kuaiProxy) GetReferer() string {

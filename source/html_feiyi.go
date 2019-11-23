@@ -21,7 +21,7 @@ type feiyi struct {
 }
 
 func (s *feiyi) Cron() string {
-	return "@every 5m"
+	return "@every 7m"
 }
 
 func (s *feiyi) Name() string {

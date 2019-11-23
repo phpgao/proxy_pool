@@ -26,7 +26,7 @@ func (s *spys) StartUrl() []string {
 }
 
 func (s *spys) Cron() string {
-	return "@every 1m"
+	return "@every 5m"
 }
 
 func (s *spys) Name() string {

@@ -6,39 +6,39 @@ import (
 	"strings"
 )
 
-type xici struct {
+type proxylistplus struct {
 	Spider
 }
 
-func (s *xici) Cron() string {
-	return "@every 2m"
+func (s *proxylistplus) Cron() string {
+	return "@every 5m"
 }
 
-func (s *xici) GetReferer() string {
-	return "https://www.xicidaili.com/"
-}
-
-func (s *xici) StartUrl() []string {
+func (s *proxylistplus) StartUrl() []string {
 	return []string{
-		"http://www.xicidaili.com/nn",
-		"http://www.xicidaili.com/wn",
+		"https://list.proxylistplus.com/Fresh-HTTP-Proxy-List-1",
 	}
 }
 
-func (s *xici) Run() {
+func (s *proxylistplus) GetReferer() string {
+	return "https://list.proxylistplus.com/"
+}
+
+func (s *proxylistplus) Run() {
 	getProxy(s)
 }
 
-func (s *xici) Name() string {
-	return "xici"
+func (s *proxylistplus) Name() string {
+	return "proxylistplus"
 }
 
-func (s *xici) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s *proxylistplus) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return
 	}
-	list := htmlquery.Find(doc, "//*[@id='ip_list']/tbody/tr[position()>1]")
+	list := htmlquery.Find(doc, "//*[@id='page']/table[2]/tbody/tr[position()>2]")
+
 	for _, n := range list {
 		ip := htmlquery.InnerText(htmlquery.FindOne(n, "//td[2]"))
 		port := htmlquery.InnerText(htmlquery.FindOne(n, "//td[3]"))
@@ -50,7 +50,7 @@ func (s *xici) Parse(body string) (proxies []*model.HttpProxy, err error) {
 			Ip:   ip,
 			Port: port,
 		})
-
 	}
+
 	return
 }

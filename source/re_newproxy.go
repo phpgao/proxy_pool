@@ -6,33 +6,33 @@ import (
 	"strings"
 )
 
-func (s *jiangxianli) StartUrl() []string {
+func (s *newproxy) StartUrl() []string {
 	return []string{
-		"http://ip.jiangxianli.com/",
+		"http://newproxy.org.ru/page.php?page_id=1",
 	}
 }
 
-func (s *jiangxianli) GetReferer() string {
-	return "http://ip.jiangxianli.com//"
+func (s *newproxy) GetReferer() string {
+	return "http://newproxy.org.ru"
 }
 
-type jiangxianli struct {
+type newproxy struct {
 	Spider
 }
 
-func (s *jiangxianli) Cron() string {
-	return "@every 1m"
+func (s *newproxy) Cron() string {
+	return "@every 10m"
 }
 
-func (s *jiangxianli) Name() string {
-	return "jiangxianli"
+func (s *newproxy) Name() string {
+	return "newproxy"
 }
 
-func (s *jiangxianli) Run() {
+func (s *newproxy) Run() {
 	getProxy(s)
 }
 
-func (s *jiangxianli) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s *newproxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	reg := regexp.MustCompile(`(?:(?:[0,1]?\d?\d|2[0-4]\d|25[0-5])\.){3}(?:[0,1]?\d?\d|2[0-4]\d|25[0-5]):\d{0,5}`)
 	rs := reg.FindAllString(body, -1)
 

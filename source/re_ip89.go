@@ -47,7 +47,7 @@ type ip89 struct {
 }
 
 func (s *ip89) Cron() string {
-	return "@every 1m"
+	return "@every 5m"
 }
 
 func (s *ip89) Name() string {

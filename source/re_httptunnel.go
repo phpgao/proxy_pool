@@ -21,7 +21,7 @@ type httptunnel struct {
 }
 
 func (s *httptunnel) Cron() string {
-	return "@every 1m"
+	return "@every 5m"
 }
 
 func (s *httptunnel) Name() string {

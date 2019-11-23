@@ -21,7 +21,7 @@ type clarketm struct {
 }
 
 func (s *clarketm) Cron() string {
-	return "@every 1m"
+	return "@every 5m"
 }
 
 func (s *clarketm) Name() string {

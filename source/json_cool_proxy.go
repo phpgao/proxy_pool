@@ -28,7 +28,7 @@ func (s *coolProxy) Run() {
 }
 
 func (s *coolProxy) Cron() string {
-	return "@every 1m"
+	return "@every 5m"
 }
 
 func (s *coolProxy) Name() string {
@@ -36,7 +36,7 @@ func (s *coolProxy) Name() string {
 }
 
 func (s *coolProxy) TimeOut() int {
-	return 15
+	return 30
 }
 
 type coolProxyJson struct {

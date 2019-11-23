@@ -18,7 +18,7 @@ type redisDB struct {
 func (r *redisDB) Test() bool {
 	pong, err := r.client.Ping().Result()
 	if err != nil {
-		logger.WithError(err).Error("error add proxy")
+		logger.WithError(err).Error("error test redis")
 		return false
 	}
 

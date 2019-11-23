@@ -6,33 +6,33 @@ import (
 	"strings"
 )
 
-func (s *jiangxianli) StartUrl() []string {
+func (s *xseo) StartUrl() []string {
 	return []string{
-		"http://ip.jiangxianli.com/",
+		"http://xseo.in/freeproxy",
 	}
 }
 
-func (s *jiangxianli) GetReferer() string {
-	return "http://ip.jiangxianli.com//"
+func (s *xseo) GetReferer() string {
+	return "http://xseo.in"
 }
 
-type jiangxianli struct {
+type xseo struct {
 	Spider
 }
 
-func (s *jiangxianli) Cron() string {
-	return "@every 1m"
+func (s *xseo) Cron() string {
+	return "@every 5m"
 }
 
-func (s *jiangxianli) Name() string {
-	return "jiangxianli"
+func (s *xseo) Name() string {
+	return "xseo"
 }
 
-func (s *jiangxianli) Run() {
+func (s *xseo) Run() {
 	getProxy(s)
 }
 
-func (s *jiangxianli) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s *xseo) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	reg := regexp.MustCompile(`(?:(?:[0,1]?\d?\d|2[0-4]\d|25[0-5])\.){3}(?:[0,1]?\d?\d|2[0-4]\d|25[0-5]):\d{0,5}`)
 	rs := reg.FindAllString(body, -1)
 

@@ -139,7 +139,6 @@ func getProxy(s Crawler) {
 			} else {
 				fetchFlag = true
 			}
-
 			if proxyText != "" {
 				newProxies, err = s.Parse(proxyText)
 				if err != nil {
@@ -151,17 +150,16 @@ func getProxy(s Crawler) {
 			}
 
 			if !parseFlag || !fetchFlag {
-
-				r := db.GetDb()
+				storeEngine := db.GetDb()
 				//if exists proxies,use random max 3 times
-				if r.Len() > 0 {
+				if storeEngine.Len() > 0 {
 					logger.WithFields(log.Fields{
 						"url": proxyURL,
 					}).Debug("try fetching url with proxy")
 					for i := 1; i <= 3; i++ {
 						fetchFlag = false
 						parseFlag = false
-						randomProxy, err := r.Random()
+						randomProxy, err := storeEngine.Random()
 						if err != nil {
 							logger.WithFields(log.Fields{
 								"url":  proxyURL,

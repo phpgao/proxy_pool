@@ -20,7 +20,7 @@ type ab57 struct {
 }
 
 func (s *ab57) Cron() string {
-	return "@every 1m"
+	return "@every 2m"
 }
 
 func (s *ab57) Name() string {

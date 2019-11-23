@@ -21,7 +21,7 @@ type rudnkh struct {
 }
 
 func (s *rudnkh) Cron() string {
-	return "@every 1m"
+	return "@every 2m"
 }
 
 func (s *rudnkh) Name() string {

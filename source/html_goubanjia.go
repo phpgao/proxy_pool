@@ -22,7 +22,7 @@ type goubanjia struct {
 }
 
 func (s *goubanjia) Cron() string {
-	return "@every 1m"
+	return "@every 2m"
 }
 
 func (s *goubanjia) Name() string {
