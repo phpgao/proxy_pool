@@ -31,6 +31,7 @@ type Resp struct {
 	Total  int         `json:"total"`
 	Schema interface{} `json:",omitempty"`
 	Score  interface{} `json:",omitempty"`
+	Cn     int         `json:",omitempty"`
 	Data   interface{} `json:"data"`
 	Get    string      `json:",omitempty"`
 	Random string      `json:",omitempty"`
@@ -106,6 +107,7 @@ func handlerStatus(w http.ResponseWriter, r *http.Request) {
 	}
 	scores := make(map[string]int)
 	schema := make(map[string]int)
+	country := 0
 
 	proxies := storeEngine.GetAll()
 	l := len(proxies)
@@ -119,11 +121,15 @@ func handlerStatus(w http.ResponseWriter, r *http.Request) {
 			}
 			status[p.From] += 1
 			setDefault(scores, strconv.Itoa(p.Score), 0, 1)
+			if p.Country == "cn" {
+				country += 1
+			}
 		}
 	}
 	resp.Schema = schema
 	resp.Data = status
 	resp.Score = scores
+	resp.Cn = country
 	resp.Home = home
 	resp.Get = "/get?schema=&score="
 	resp.Random = "/random?schema=&score="
@@ -172,14 +178,16 @@ func Filter(r *http.Request, resp Resp) (proxies []model.HttpProxy, err error) {
 	// score above given number
 	score := r.FormValue("score")
 	_source := r.FormValue("source")
+	country := r.FormValue("country")
 	if err != nil {
 		resp.Error = err.Error()
 	}
 	proxies, err = storeEngine.Get(map[string]string{
-		"schema": schema,
-		"cn":     cn,
-		"score":  score,
-		"source": _source,
+		"schema":  schema,
+		"cn":      cn,
+		"score":   score,
+		"source":  _source,
+		"country": country,
 	})
 	return
 }

@@ -18,7 +18,8 @@ type Config struct {
 		Auth      string `default:""`
 		PrefixKey string `default:"proxy_pool"`
 	}
-	Concurrence    int    `default:"100"`
+	NewQueue    int    `default:"200"`
+	OldQueue    int    `default:"300"`
 	Debug          bool   `default:"false"`
 	Timeout        int    `default:"10"`
 	CheckInterval  int    `default:"60"`

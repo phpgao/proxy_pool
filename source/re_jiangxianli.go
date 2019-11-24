@@ -33,7 +33,7 @@ func (s *jiangxianli) Run() {
 }
 
 func (s *jiangxianli) Parse(body string) (proxies []*model.HttpProxy, err error) {
-	reg := regexp.MustCompile(`(?:(?:[0,1]?\d?\d|2[0-4]\d|25[0-5])\.){3}(?:[0,1]?\d?\d|2[0-4]\d|25[0-5]):\d{0,5}`)
+	reg := regexp.MustCompile(regProxy)
 	rs := reg.FindAllString(body, -1)
 
 	for _, proxy := range rs {

@@ -7,8 +7,8 @@ import (
 
 var (
 	config       = util.GetConfig()
-	NewProxyChan = make(chan *model.HttpProxy, config.Concurrence)
-	OldProxyChan = make(chan *model.HttpProxy, config.Concurrence)
+	NewProxyChan = make(chan *model.HttpProxy, config.NewQueue)
+	OldProxyChan = make(chan *model.HttpProxy, config.OldQueue)
 )
 
 func GetNewChan() chan *model.HttpProxy {

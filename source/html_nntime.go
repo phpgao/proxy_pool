@@ -76,7 +76,7 @@ func (s *nntime) Parse(body string) (proxies []*model.HttpProxy, err error) {
 }
 
 func getIp(s string) (ip string, err error) {
-	r := regexp.MustCompile(`(?:(?:[0,1]?\d?\d|2[0-4]\d|25[0-5])\.){3}(?:[0,1]?\d?\d|2[0-4]\d|25[0-5])`).FindAllStringSubmatch(s, 1)
+	r := regexp.MustCompile(regIp).FindAllStringSubmatch(s, 1)
 	if r == nil {
 		err = errors.New("no ip found")
 		return

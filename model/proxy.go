@@ -25,6 +25,7 @@ type HttpProxy struct {
 	Latency   int    `json:"latency"`
 	From      string `json:"-"`
 	Anonymous int    `json:"anonymous"`
+	Country   string `json:"country"`
 }
 
 func Make(m map[string]string) (newProxy HttpProxy, err error) {

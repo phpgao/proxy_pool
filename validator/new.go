@@ -17,39 +17,48 @@ var (
 
 func NewValidator() {
 	q := queue.GetNewChan()
-	for {
-		proxy := <-q
-		go func(ip *model.HttpProxy) {
-			key := ip.GetKey()
-			if _, ok := lockMap.Load(key); ok {
-				return
-			}
+	var wg sync.WaitGroup
 
-			lockMap.Store(key, 1)
-			defer func() {
-				lockMap.Delete(key)
-			}()
+	for i := 0; i < config.OldQueue; i++ {
+		wg.Add(1)
+		go func() {
+			for {
+				proxy := <-q
 
-			if storeEngine.Exists(*proxy) {
-				return
+				func(p *model.HttpProxy) {
+					key := p.GetKey()
+					if _, ok := lockMap.Load(key); ok {
+						return
+					}
+
+					lockMap.Store(key, 1)
+					defer func() {
+						lockMap.Delete(key)
+					}()
+
+					if storeEngine.Exists(*proxy) {
+						return
+					}
+					if !p.SimpleTcpTest(config.GetTcpTestTimeOut()) {
+						return
+					}
+					// http test
+					err := p.TestProxy(false)
+					if err != nil {
+						logger.WithError(err).WithField(
+							"proxy", p.GetProxyUrl()).Debug("error test http proxy")
+					} else {
+						// https test
+						err := p.TestProxy(true)
+						if err != nil {
+							logger.WithError(err).WithField(
+								"proxy", p.GetProxyUrl()).Debug("error test https proxy")
+						}
+						storeEngine.Add(*p)
+					}
+				}(proxy)
 			}
-			if !ip.SimpleTcpTest(config.GetTcpTestTimeOut()) {
-				return
-			}
-			// http test
-			err := ip.TestProxy(false)
-			if err != nil {
-				logger.WithError(err).WithField(
-					"proxy", ip.GetProxyUrl()).Debug("error test http proxy")
-			} else {
-				// https test
-				err := ip.TestProxy(true)
-				if err != nil {
-					logger.WithError(err).WithField(
-						"proxy", ip.GetProxyUrl()).Debug("error test https proxy")
-				}
-				storeEngine.Add(*ip)
-			}
-		}(proxy)
+		}()
 	}
+	wg.Wait()
 }

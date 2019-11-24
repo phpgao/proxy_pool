@@ -27,7 +27,7 @@ var ListOfSpider = []Crawler{
 	&usProxy{},
 	&siteDigger{},
 	&dogdev{},
-	&newproxy{},
+	//&newproxy{},
 	&xseo{},
 	&ultraProxies{},
 	&premProxy{},

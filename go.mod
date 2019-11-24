@@ -13,6 +13,7 @@ require (
 	github.com/fatih/structs v1.1.0
 	github.com/go-redis/redis/v7 v7.0.0-beta.4
 	github.com/golang/groupcache v0.0.0-20191027212112-611e8accdfc9 // indirect
+	github.com/ipipdotnet/ipdb-go v1.2.0
 	github.com/jinzhu/configor v1.1.1
 	github.com/moul/http2curl v1.0.0 // indirect
 	github.com/parnurzeal/gorequest v0.2.15

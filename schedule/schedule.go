@@ -82,7 +82,7 @@ func NewScheduler() *Scheduler {
 	id, err := s.cron.AddJob(config.GetInternalCron(), internalJob)
 
 	if err != nil {
-		logger.WithError(err).Error("error init internal job")
+		logger.WithError(err).Error("error initial internal job")
 	}
 	s.cronMap["internal"] = id
 	return s

@@ -15,8 +15,10 @@ import (
 )
 
 var (
-	config = util.GetConfig()
-	logger = util.GetLogger()
+	config   = util.GetConfig()
+	logger   = util.GetLogger()
+	regIp    = `(?:(?:[0,1]?\d?\d|2[0-4]\d|25[0-5])\.){3}(?:[0,1]?\d?\d|2[0-4]\d|25[0-5])`
+	regProxy = `(?:(?:[0,1]?\d?\d|2[0-4]\d|25[0-5])\.){3}(?:[0,1]?\d?\d|2[0-4]\d|25[0-5]):\d{0,5}`
 )
 
 func init() {

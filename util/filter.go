@@ -18,7 +18,7 @@ func filterOfSchema(v string) func(model.HttpProxy) bool {
 
 func filterOfCn(v string) func(model.HttpProxy) bool {
 	return func(proxy model.HttpProxy) bool {
-		if proxy.Schema == strings.ToLower(v) {
+		if proxy.Country == strings.ToLower(v) {
 			return true
 		}
 		return false
@@ -62,10 +62,10 @@ func GetNewFilter(options map[string]string) (f []func(model.HttpProxy) bool, er
 			}
 			f = append(f, filterOfScore(i))
 		}
-		// todo
-		//if k == "cn" && v != ""{
-		//	f = append(f,filterOfSchema(v) )
-		//}
+
+		if k == "country" && v != "" {
+			f = append(f, filterOfCn(v))
+		}
 	}
 
 	return
@@ -83,6 +83,18 @@ func FilterProxy(proxy *model.HttpProxy) bool {
 
 	if port < 1 || port > 65535 {
 		return false
+	}
+
+	ipInfo, err := Db.FindInfo(proxy.Ip, "CN")
+	if err != nil {
+		logger.WithField("ip", proxy.Ip).WithError(err).Warn("can not find ip info")
+		return false
+	}
+
+	if ipInfo.CountryName == "中国" {
+		proxy.Country = "cn"
+	} else {
+		proxy.Country = ipInfo.CountryName
 	}
 
 	return true
