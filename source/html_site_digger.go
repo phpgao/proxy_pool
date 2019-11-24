@@ -1,48 +1,54 @@
 package source
 
 import (
-	"fmt"
+	"errors"
 	"github.com/phpgao/proxy_pool/model"
 	"github.com/robertkrimen/otto"
 	"regexp"
 	"strings"
 )
 
-type site_digger struct {
+type siteDigger struct {
 	Spider
 }
 
-func (s *site_digger) StartUrl() []string {
+func (s *siteDigger) StartUrl() []string {
 	return []string{
 		"http://www.site-digger.com/html/articles/20110516/proxieslist.html",
 	}
 }
 
-func (s *site_digger) Cron() string {
+func (s *siteDigger) Cron() string {
 	return "1 * * * *"
 }
 
-func (s *site_digger) Name() string {
+func (s *siteDigger) Name() string {
 	return "site_digger"
 }
 
-func (s *site_digger) GetReferer() string {
+func (s *siteDigger) GetReferer() string {
 	return "http://www.site-digger.com/"
 }
 
-func (s *site_digger) Run() {
+func (s *siteDigger) Run() {
 	getProxy(s)
 }
 
-func (s *site_digger) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s *siteDigger) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	reg := regexp.MustCompile(`document\.write\((decrypt\("[a-zA-Z0-9/+]*={0,2}"\))\);`)
 	rs := reg.FindAllStringSubmatch(body, -1)
 
-	if len(rs) == 0{
+	scriptRe := regexp.MustCompile(`var baidu_union_id = "(\w+)";`)
+	scriptRs := scriptRe.FindAllStringSubmatch(body, 1)
+	if scriptRs == nil {
+		err = errors.New("baidu_union_id not found")
+		return
+	}
+	baiduUnionId := scriptRs[0][1]
+	if len(rs) == 0 {
 		logger.WithField("site", s.Name()).Info("zero proxy")
 		return
 	}
-
 	initJs := `
 var CryptoJS=CryptoJS||function(u,p){var d={},l=d.lib={},s=function(){},t=l.Base={extend:function(a){s.prototype=this;var c=new s;a&&c.mixIn(a);c.hasOwnProperty("init")||(c.init=function(){c.$super.init.apply(this,arguments)});c.init.prototype=c;c.$super=this;return c},create:function(){var a=this.extend();a.init.apply(a,arguments);return a},init:function(){},mixIn:function(a){for(var c in a)a.hasOwnProperty(c)&&(this[c]=a[c]);a.hasOwnProperty("toString")&&(this.toString=a.toString)},clone:function(){return this.init.prototype.extend(this)}},
 r=l.WordArray=t.extend({init:function(a,c){a=this.words=a||[];this.sigBytes=c!=p?c:4*a.length},toString:function(a){return(a||v).stringify(this)},concat:function(a){var c=this.words,e=a.words,j=this.sigBytes;a=a.sigBytes;this.clamp();if(j%4)for(var k=0;k<a;k++)c[j+k>>>2]|=(e[k>>>2]>>>24-8*(k%4)&255)<<24-8*((j+k)%4);else if(65535<e.length)for(k=0;k<a;k+=4)c[j+k>>>2]=e[k>>>2];else c.push.apply(c,e);this.sigBytes+=a;return this},clamp:function(){var a=this.words,c=this.sigBytes;a[c>>>2]&=4294967295<<
@@ -73,7 +79,29 @@ b.keySize,b.ivSize);l.iv=d.iv;b=a.encrypt.call(this,b,c,d.key,l);b.mixIn(d);retu
 16,32,64,128,27,54],d=d.AES=p.extend({_doReset:function(){for(var a=this._key,c=a.words,d=a.sigBytes/4,a=4*((this._nRounds=d+6)+1),e=this._keySchedule=[],j=0;j<a;j++)if(j<d)e[j]=c[j];else{var k=e[j-1];j%d?6<d&&4==j%d&&(k=l[k>>>24]<<24|l[k>>>16&255]<<16|l[k>>>8&255]<<8|l[k&255]):(k=k<<8|k>>>24,k=l[k>>>24]<<24|l[k>>>16&255]<<16|l[k>>>8&255]<<8|l[k&255],k^=H[j/d|0]<<24);e[j]=e[j-d]^k}c=this._invKeySchedule=[];for(d=0;d<a;d++)j=a-d,k=d%4?e[j]:e[j-4],c[d]=4>d||4>=j?k:b[l[k>>>24]]^x[l[k>>>16&255]]^q[l[k>>>
 8&255]]^n[l[k&255]]},encryptBlock:function(a,b){this._doCryptBlock(a,b,this._keySchedule,t,r,w,v,l)},decryptBlock:function(a,c){var d=a[c+1];a[c+1]=a[c+3];a[c+3]=d;this._doCryptBlock(a,c,this._invKeySchedule,b,x,q,n,s);d=a[c+1];a[c+1]=a[c+3];a[c+3]=d},_doCryptBlock:function(a,b,c,d,e,j,l,f){for(var m=this._nRounds,g=a[b]^c[0],h=a[b+1]^c[1],k=a[b+2]^c[2],n=a[b+3]^c[3],p=4,r=1;r<m;r++)var q=d[g>>>24]^e[h>>>16&255]^j[k>>>8&255]^l[n&255]^c[p++],s=d[h>>>24]^e[k>>>16&255]^j[n>>>8&255]^l[g&255]^c[p++],t=
 d[k>>>24]^e[n>>>16&255]^j[g>>>8&255]^l[h&255]^c[p++],n=d[n>>>24]^e[g>>>16&255]^j[h>>>8&255]^l[k&255]^c[p++],g=q,h=s,k=t;q=(f[g>>>24]<<24|f[h>>>16&255]<<16|f[k>>>8&255]<<8|f[n&255])^c[p++];s=(f[h>>>24]<<24|f[k>>>16&255]<<16|f[n>>>8&255]<<8|f[g&255])^c[p++];t=(f[k>>>24]<<24|f[n>>>16&255]<<16|f[g>>>8&255]<<8|f[h&255])^c[p++];n=(f[n>>>24]<<24|f[g>>>16&255]<<16|f[h>>>8&255]<<8|f[k&255])^c[p++];a[b]=q;a[b+1]=s;a[b+2]=t;a[b+3]=n},keySize:8});u.AES=p._createHelper(d)})();
-var baidu_union_id = "4ee9a5640e0a11ea";
+CryptoJS.pad.ZeroPadding = {
+    pad: function (data, blockSize) {
+        // Shortcut
+        var blockSizeBytes = blockSize * 4;
+
+        // Pad
+        data.clamp();
+        data.sigBytes += blockSizeBytes - ((data.sigBytes % blockSizeBytes) || blockSizeBytes);
+    },
+
+    unpad: function (data) {
+        // Shortcut
+        var dataWords = data.words;
+
+        // Unpad
+        var i = data.sigBytes - 1;
+        while (!((dataWords[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff)) {
+            i--;
+        }
+        data.sigBytes = i + 1;
+    }
+};
+var baidu_union_id = "%baidu_union_id%";
 function decrypt(d) {
     var b = CryptoJS.enc.Latin1.parse(baidu_union_id);
     var c = b;
@@ -83,6 +111,8 @@ function decrypt(d) {
     });
     return a.toString(CryptoJS.enc.Utf8)
 };`
+
+	initJs = strings.Replace(initJs, "%baidu_union_id%", baiduUnionId, 1)
 	vm := otto.New()
 	_, err = vm.Run(initJs)
 	if err != nil {
@@ -90,8 +120,7 @@ function decrypt(d) {
 	}
 
 	for _, proxy := range rs {
-		fmt.Println(proxy)
-		proxyStr, err := DecodeString(vm,proxy[1])
+		proxyStr, err := DecodeString(vm, proxy[1])
 		if err != nil {
 			logger.WithError(err).Debug("error decode")
 			continue

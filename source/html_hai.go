@@ -11,7 +11,7 @@ type IpHai struct {
 }
 
 func (s *IpHai) Cron() string {
-	return "@every 1m"
+	return "@every 2m"
 }
 
 func (s *IpHai) StartUrl() []string {

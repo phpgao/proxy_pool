@@ -23,6 +23,14 @@ var ListOfSpider = []Crawler{
 	&proxylist{},
 	&proxylistplus{},
 	&aliveproxy{},
+	&proxyDb{},
+	&usProxy{},
+	&siteDigger{},
+	&dogdev{},
+	&newproxy{},
+	&xseo{},
+	&ultraProxies{},
+	&premProxy{},
 }
 
 func GetSpiders(ch chan<- *model.HttpProxy) []Crawler {
