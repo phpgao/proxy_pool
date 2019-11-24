@@ -213,6 +213,7 @@ func getProxy(s Crawler) {
 			// user proxy 3 times
 			var tmpMap = map[string]int{}
 			if parseFlag && fetchFlag {
+				logger.WithField("spider", s.Name()).WithField("count", len(newProxies)).Debug("count proxy")
 				for _, newProxy := range newProxies {
 					newProxy.Ip = strings.TrimSpace(newProxy.Ip)
 					newProxy.Port = strings.TrimSpace(newProxy.Port)
@@ -228,6 +229,8 @@ func getProxy(s Crawler) {
 						inputChan <- newProxy
 					}
 				}
+			} else {
+				logger.WithField("spider", s.Name()).WithField("count", len(newProxies)).Info("zero proxy")
 			}
 
 		}(url, s.GetProxyChan())
