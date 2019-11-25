@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	config = util.GetConfig()
+	config = util.ServerConf
 	logger = util.GetLogger()
 	db     Store
 )
@@ -30,12 +30,11 @@ func GetDb() Store {
 	if db == nil {
 		db = &redisDB{
 			client: redis.NewClient(&redis.Options{
-				Addr:     fmt.Sprintf("%s:%d", config.Redis.IP, config.Redis.Port),
-				Password: config.Redis.Auth, // no password set
-				DB:       config.Redis.Db,   // use default DB
-				//PoolSize:       10,   // use default DB
+				Addr:     fmt.Sprintf("%s:%d", config.IP, config.Port),
+				Password: config.Auth, // no password set
+				DB:       config.Db,   // use default DB
 			}),
-			PrefixKey: config.Redis.PrefixKey,
+			PrefixKey: config.PrefixKey,
 			KeyExpire: config.Expire,
 		}
 		if !db.Test() {

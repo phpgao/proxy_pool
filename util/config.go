@@ -2,24 +2,22 @@ package util
 
 import (
 	"fmt"
-	"github.com/jinzhu/configor"
+	"github.com/koding/multiconfig"
 	"time"
 )
 
-var c Config
+var ServerConf *Config
 
 type Config struct {
-	Worker  bool `default:"true"`
-	Manager bool `default:"true"`
-	Redis   struct {
-		IP        string `default:"127.0.0.1"`
-		Port      int    `default:"6379"`
-		Db        int    `default:"1"`
-		Auth      string `default:""`
-		PrefixKey string `default:"proxy_pool"`
-	}
-	NewQueue    int    `default:"200"`
-	OldQueue    int    `default:"300"`
+	Worker         bool   `default:"true"`
+	Manager        bool   `default:"true"`
+	IP             string `default:"127.0.0.1"`
+	Port           int    `default:"6379"`
+	Db             int    `default:"1"`
+	Auth           string `default:""`
+	PrefixKey      string `default:"proxy_pool"`
+	NewQueue       int    `default:"200"`
+	OldQueue       int    `default:"300"`
 	Debug          bool   `default:"false"`
 	Timeout        int    `default:"10"`
 	CheckInterval  int    `default:"60"`
@@ -36,20 +34,16 @@ type Config struct {
 	TcpTestTimeOut int    `default:"5"`
 }
 
+func init() {
+	m := multiconfig.NewWithPath("config.json")
+	serverConf := new(Config)
+	m.MustLoad(serverConf)
+	ServerConf = serverConf
+}
+
 func (c Config) GetInternalCron() string {
 	return fmt.Sprintf("@every %ds", c.CheckInterval)
 }
 func (c Config) GetTcpTestTimeOut() time.Duration {
 	return time.Duration(c.TcpTestTimeOut) * time.Second
-}
-
-func GetConfig() *Config {
-	if !c.Init {
-		err := configor.Load(&c, "config.json")
-		if err != nil {
-			panic(err)
-		}
-		c.Init = true
-	}
-	return &c
 }

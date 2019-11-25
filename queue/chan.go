@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	config       = util.GetConfig()
+	config       = util.ServerConf
 	NewProxyChan = make(chan *model.HttpProxy, config.NewQueue)
 	OldProxyChan = make(chan *model.HttpProxy, config.OldQueue)
 )

@@ -16,7 +16,7 @@ type Scheduler struct {
 }
 
 var (
-	config = util.GetConfig()
+	config = util.ServerConf
 	logger = util.GetLogger()
 )
 

@@ -13,7 +13,7 @@ import (
 var (
 	Http   pool.Pool
 	Https  pool.Pool
-	config = util.GetConfig()
+	config = util.ServerConf
 	logger = util.GetLogger()
 )
 

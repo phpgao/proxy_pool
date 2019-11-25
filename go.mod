@@ -9,12 +9,14 @@ require (
 	github.com/corpix/uarand v0.1.0
 	github.com/elazarl/goproxy v0.0.0-20190711103511-473e67f1d7d2 // indirect
 	github.com/elazarl/goproxy/ext v0.0.0-20190711103511-473e67f1d7d2 // indirect
+	github.com/fatih/camelcase v1.0.0 // indirect
 	github.com/fatih/pool v3.0.0+incompatible
 	github.com/fatih/structs v1.1.0
 	github.com/go-redis/redis/v7 v7.0.0-beta.4
 	github.com/golang/groupcache v0.0.0-20191027212112-611e8accdfc9 // indirect
 	github.com/ipipdotnet/ipdb-go v1.2.0
 	github.com/jinzhu/configor v1.1.1
+	github.com/koding/multiconfig v0.0.0-20171124222453-69c27309b2d7
 	github.com/moul/http2curl v1.0.0 // indirect
 	github.com/parnurzeal/gorequest v0.2.15
 	github.com/robertkrimen/otto v0.0.0-20180617131154-15f95af6e78d

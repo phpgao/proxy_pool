@@ -71,7 +71,7 @@ func (s *coolProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
 		return coolProxies[i].UpdateTime > coolProxies[j].UpdateTime
 	})
 
-	for _, proxy := range coolProxies[:100] {
+	for _, proxy := range coolProxies {
 		proxies = append(proxies, &model.HttpProxy{
 			Ip:        proxy.IP,
 			Port:      strconv.Itoa(proxy.Port),

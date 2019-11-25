@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	config         = util.GetConfig()
+	config         = util.ServerConf
 	logger         = util.GetLogger()
 	storeEngine    = db.GetDb()
 	IdleConnClosed = make(chan struct{})

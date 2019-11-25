@@ -8,8 +8,7 @@ import (
 )
 
 var (
-	config = util.GetConfig()
-	//logger = util.GetLogger()
+	config = util.ServerConf
 )
 
 func main() {

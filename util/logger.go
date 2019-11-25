@@ -39,9 +39,8 @@ func (h *Handler) HandleLog(e *log.Entry) error {
 
 func GetLogger() *log.Logger {
 	if logger == nil {
-		config := GetConfig()
 		var level log.Level
-		if config.Debug {
+		if ServerConf.Debug {
 			level = log.DebugLevel
 		} else {
 			level = log.InfoLevel
@@ -52,7 +51,7 @@ func GetLogger() *log.Logger {
 			},
 			Level: level,
 		}
-		logger.WithField("config", structs.Map(config)).Debug("loaded config")
+		logger.WithField("config", structs.Map(ServerConf)).Debug("loaded config")
 	}
 
 	return logger

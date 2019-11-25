@@ -1,12 +1,25 @@
 {
-  "redis": {
-    "ip": "127.0.0.1",
-    "port": 6379,
-    "db": 1,
-    "auth": "",
-    "prefixKey": ""
-  },
-  "checkinterval": 90,
-  "debug": false,
-  "timeout": 10
+  "Worker":true,
+  "Manager":true,
+  "IP":"127.0.0.1",
+  "Port":6379,
+  "Db":1,
+  "Auth":"",
+  "PrefixKey":"proxy_pool",
+  "NewQueue":200,
+  "OldQueue":300,
+  "Debug":false,
+  "Timeout":10,
+  "CheckInterval":60,
+  "Init":false,
+  "Expire":0,
+  "Score":60,
+  "Retry":3,
+  "TcpTimeout":5,
+  "ProxyTimeout":3,
+  "ApiBind":"0.0.0.0",
+  "ApiPort":8088,
+  "ProxyBind":"0.0.0.0",
+  "ProxyPort":8089,
+  "TcpTestTimeOut":5
 }

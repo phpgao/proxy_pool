@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	config      = util.GetConfig()
+	config      = util.ServerConf
 	logger      = util.GetLogger()
 	storeEngine = db.GetDb()
 	lockMap     = sync.Map{}
