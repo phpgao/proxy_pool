@@ -26,7 +26,7 @@ type Config struct {
 	Score          int    `default:"60"`
 	Retry          int    `default:"3"`
 	TcpTimeout     int    `default:"5"`
-	ProxyTimeout   int    `default:"3"`
+	ProxyTimeout   int    `default:"5"`
 	ApiBind        string `default:"0.0.0.0"`
 	ApiPort        int    `default:"8088"`
 	ProxyBind      string `default:"0.0.0.0"`

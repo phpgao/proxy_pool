@@ -19,6 +19,7 @@ type Store interface {
 	Get(map[string]string) ([]model.HttpProxy, error)
 	Exists(model.HttpProxy) bool
 	Add(model.HttpProxy) bool
+	UpdateSchema(model.HttpProxy) error
 	Remove(model.HttpProxy) (bool, error)
 	Random() (model.HttpProxy, error)
 	Len() int

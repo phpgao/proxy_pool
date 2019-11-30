@@ -34,10 +34,25 @@ func OldValidator() {
 						// if tcp test success
 						if conn != nil {
 							score = 10
-							err := p.TestConnectMethod(conn)
-							if err != nil {
-								logger.WithError(err).Debug("error https test")
+							// test https
+							if !p.IsHttps() {
+								err := p.TestConnectMethod(conn)
+								if err != nil {
+									logger.WithError(err).Debug("error https test")
+								}
+								p.Schema = "https"
+								// save proxy to db
+								logger.WithField(
+									"proxy", p.GetProxyUrl()).Debug("update schema to https")
+								err = storeEngine.UpdateSchema(p)
+								if err != nil {
+									logger.WithError(err).WithField(
+										"proxy", p.GetProxyUrl()).Debug("error update schema")
+								}
+							} else {
+								_ = conn.Close()
 							}
+
 						}
 
 						err = storeEngine.AddScore(p, score)

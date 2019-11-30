@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"github.com/go-redis/redis/v7"
 	"github.com/phpgao/proxy_pool/model"
 	"math/rand"
@@ -67,6 +68,24 @@ func (r *redisDB) Add(proxy model.HttpProxy) bool {
 	}
 
 	return true
+}
+
+func (r *redisDB) UpdateSchema(proxy model.HttpProxy) (err error) {
+	key := strings.Join([]string{
+		r.PrefixKey,
+		"list",
+		proxy.GetKey(),
+	}, ":")
+	if !r.KeyExists(key) {
+		return errors.New("proxy not exists")
+	}
+
+	err = r.client.HSet(key, "schema", proxy.Schema).Err()
+	if err != nil {
+		return err
+	}
+	
+	return
 }
 
 func (r *redisDB) Expire(key string, expiration time.Duration) error {

@@ -49,6 +49,7 @@ func handleTunneling(w http.ResponseWriter, r *http.Request) {
 	clientConn, _, err := hijacker.Hijack()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusServiceUnavailable)
+		return
 	}
 	go transfer(destConn, clientConn)
 	go transfer(clientConn, destConn)
@@ -59,22 +60,10 @@ func transfer(destination io.WriteCloser, source io.ReadCloser) {
 	io.Copy(destination, source)
 }
 func handleHTTP(w http.ResponseWriter, req *http.Request) {
-	//proxies, err := storeEngine.Get(map[string]string{
-	//	"schema": "http",
-	//})
-	//if err != nil {
-	//	return
-	//}
-	//l := len(proxies)
-	//if l == 0 {
-	//	http.Error(w, "no valid proxy", http.StatusServiceUnavailable)
-	//	return
-	//}
-	//proxy := proxies[rand.Intn(l)]
-
 	proxy, err := storeEngine.Random()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusServiceUnavailable)
+		return
 	}
 	Transport := http.Transport{
 		Proxy: func(request *http.Request) (url *url.URL, err error) {
@@ -106,6 +95,7 @@ func handleHTTP(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(resp.StatusCode)
 	io.Copy(w, resp.Body)
 }
+
 func copyHeader(dst, src http.Header) {
 	for k, vv := range src {
 		for _, v := range vv {
@@ -113,6 +103,7 @@ func copyHeader(dst, src http.Header) {
 		}
 	}
 }
+
 func ServeReverse() {
 	server := &http.Server{
 		Addr: fmt.Sprintf("%s:%d", config.ProxyBind, config.ProxyPort),

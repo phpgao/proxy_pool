@@ -21,7 +21,7 @@ type cn66 struct {
 }
 
 func (s *cn66) Cron() string {
-	return "@every 2m"
+	return "@every 1m"
 }
 
 func (s *cn66) Name() string {
