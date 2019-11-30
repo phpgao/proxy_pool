@@ -70,7 +70,7 @@ func NewScheduler() *Scheduler {
 		cronMap: make(map[string]cron.EntryID),
 	}
 
-	s.spiders = source.GetSpiders(queue.NewProxyChan)
+	s.spiders = source.GetSpiders(queue.GetNewChan())
 
 	internalJob := Internal{
 		channel: queue.OldProxyChan,

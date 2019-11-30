@@ -1,11 +1,13 @@
 package model
 
 import (
+	"bytes"
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/fatih/structs"
+	"github.com/phpgao/proxy_pool/util"
 	"io"
 	"io/ioutil"
 	"net"
@@ -16,6 +18,13 @@ import (
 	"strings"
 	"time"
 )
+
+var (
+	config = util.ServerConf
+	logger = util.GetLogger()
+)
+
+const ConnectCommand = "%s %s %s\r\nHost: %s\r\nProxy-Connection: Keep-Alive\r\n\r\n"
 
 type HttpProxy struct {
 	Ip        string `json:"ip"`
@@ -70,6 +79,11 @@ func (p *HttpProxy) GetKey() string {
 func (p *HttpProxy) GetProxyUrl() string {
 	return fmt.Sprintf("%s:%s", p.Ip, p.Port)
 }
+
+func (p *HttpProxy) GetProxyWithSchema() string {
+	return fmt.Sprintf("%s://%s:%s", p.Schema, p.Ip, p.Port)
+}
+
 func (p *HttpProxy) GetProxyHash() map[string]interface{} {
 	return structs.Map(p)
 }
@@ -152,5 +166,56 @@ func (p *HttpProxy) TestProxy(https bool) (err error) {
 	} else {
 		p.Schema = "http"
 	}
+	return
+}
+
+// test tcp
+func (p *HttpProxy) TestTcp() (conn net.Conn, err error) {
+	conn, err = net.DialTimeout("tcp", fmt.Sprintf("%s:%s", p.Ip, p.Port), config.GetTcpTestTimeOut())
+	if err != nil {
+		if conn != nil {
+			_ = conn.Close()
+		}
+		return
+	}
+
+	return
+}
+
+// test http connect method
+func (p *HttpProxy) TestConnectMethod(conn net.Conn) (err error) {
+	defer conn.Close()
+	testHost := "cip.cc:443"
+	Connect := fmt.Sprintf(ConnectCommand, http.MethodConnect, testHost, "HTTP/1.1", testHost)
+	_, err = conn.Write([]byte(Connect))
+	if err != nil {
+		return
+	}
+	// read 200 code
+	var mb [1024]byte
+	if err = conn.SetReadDeadline(time.Now().Add(time.Duration(config.ProxyTimeout) * time.Second)); err != nil {
+		return
+	}
+	_, err = conn.Read(mb[:])
+	if err != nil {
+		return
+	}
+	firstLineIndex := bytes.IndexByte(mb[:], '\n')
+	if firstLineIndex == -1 {
+		return errors.New("error response format")
+	}
+	var stringBack = string(mb[:firstLineIndex])
+	var code, version string
+
+	_, err = fmt.Sscanf(stringBack, "%s %s", &version, &code)
+
+	if err != nil {
+		return
+	}
+
+	if version != "HTTP/1.1" || code != "200" {
+		return errors.New("bad response" + stringBack)
+	}
+
 	return
 }

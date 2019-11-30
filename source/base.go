@@ -212,7 +212,7 @@ func getProxy(s Crawler) {
 			}
 
 			// if empty content or failed
-			// user proxy 3 times
+			// user proxy at most 3 times
 			var tmpMap = map[string]int{}
 			if parseFlag && fetchFlag {
 				logger.WithField("spider", s.Name()).WithField("count", len(newProxies)).Debug("count proxy")
@@ -227,7 +227,7 @@ func getProxy(s Crawler) {
 					if newProxy.Score == 0 {
 						newProxy.Score = config.Score
 					}
-					if util.FilterProxy(newProxy) {
+					if model.FilterProxy(newProxy) {
 						inputChan <- newProxy
 					}
 				}

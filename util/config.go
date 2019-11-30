@@ -32,6 +32,7 @@ type Config struct {
 	ProxyBind      string `default:"0.0.0.0"`
 	ProxyPort      int    `default:"8089"`
 	TcpTestTimeOut int    `default:"5"`
+	OnlyChina      bool   `default:"false"`
 }
 
 func init() {

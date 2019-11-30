@@ -26,12 +26,21 @@ func OldValidator() {
 						lockMap.Delete(key)
 					}()
 					if storeEngine.Exists(p) {
-						var score = -30
-						flag := p.SimpleTcpTest(config.GetTcpTestTimeOut())
-						if flag {
-							score = 10
+						var score int
+						conn, err := p.TestTcp()
+						if err != nil {
+							score = -30
 						}
-						err := storeEngine.AddScore(p, score)
+						// if tcp test success
+						if conn != nil {
+							score = 10
+							err := p.TestConnectMethod(conn)
+							if err != nil {
+								logger.WithError(err).Debug("error https test")
+							}
+						}
+
+						err = storeEngine.AddScore(p, score)
 						if err != nil {
 							logger.WithError(err).WithField(
 								"proxy", p.GetProxyUrl()).Error("error setting score")

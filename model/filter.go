@@ -1,14 +1,14 @@
-package util
+package model
 
 import (
-	"github.com/phpgao/proxy_pool/model"
+	"github.com/phpgao/proxy_pool/util"
 	"net"
 	"strconv"
 	"strings"
 )
 
-func filterOfSchema(v string) func(model.HttpProxy) bool {
-	return func(proxy model.HttpProxy) bool {
+func filterOfSchema(v string) func(HttpProxy) bool {
+	return func(proxy HttpProxy) bool {
 		if proxy.Schema == strings.ToLower(v) {
 			return true
 		}
@@ -16,24 +16,24 @@ func filterOfSchema(v string) func(model.HttpProxy) bool {
 	}
 }
 
-func filterOfCn(v string) func(model.HttpProxy) bool {
-	return func(proxy model.HttpProxy) bool {
+func filterOfCn(v string) func(HttpProxy) bool {
+	return func(proxy HttpProxy) bool {
 		if proxy.Country == strings.ToLower(v) {
 			return true
 		}
 		return false
 	}
 }
-func filterOfScore(v int) func(model.HttpProxy) bool {
-	return func(proxy model.HttpProxy) bool {
+func filterOfScore(v int) func(HttpProxy) bool {
+	return func(proxy HttpProxy) bool {
 		if proxy.Score >= v {
 			return true
 		}
 		return false
 	}
 }
-func filterOfSource(v string) func(model.HttpProxy) bool {
-	return func(proxy model.HttpProxy) bool {
+func filterOfSource(v string) func(HttpProxy) bool {
+	return func(proxy HttpProxy) bool {
 		if strings.ToLower(proxy.From) == strings.ToLower(v) {
 			return true
 		}
@@ -41,7 +41,7 @@ func filterOfSource(v string) func(model.HttpProxy) bool {
 	}
 }
 
-func GetNewFilter(options map[string]string) (f []func(model.HttpProxy) bool, err error) {
+func GetNewFilter(options map[string]string) (f []func(HttpProxy) bool, err error) {
 	for k, v := range options {
 		if k == "schema" && v != "" {
 			f = append(f, filterOfSchema(v))
@@ -71,7 +71,7 @@ func GetNewFilter(options map[string]string) (f []func(model.HttpProxy) bool, er
 	return
 }
 
-func FilterProxy(proxy *model.HttpProxy) bool {
+func FilterProxy(proxy *HttpProxy) bool {
 	if tmp := net.ParseIP(proxy.Ip); tmp.To4() == nil {
 		return false
 	}
@@ -85,7 +85,7 @@ func FilterProxy(proxy *model.HttpProxy) bool {
 		return false
 	}
 
-	ipInfo, err := Db.FindInfo(proxy.Ip, "CN")
+	ipInfo, err := util.Db.FindInfo(proxy.Ip, "CN")
 	if err != nil {
 		logger.WithField("ip", proxy.Ip).WithError(err).Warn("can not find ip info")
 		return false
@@ -94,6 +94,9 @@ func FilterProxy(proxy *model.HttpProxy) bool {
 	if ipInfo.CountryName == "中国" {
 		proxy.Country = "cn"
 	} else {
+		if util.ServerConf.OnlyChina {
+			return false
+		}
 		proxy.Country = ipInfo.CountryName
 	}
 

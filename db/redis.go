@@ -3,7 +3,6 @@ package db
 import (
 	"github.com/go-redis/redis/v7"
 	"github.com/phpgao/proxy_pool/model"
-	"github.com/phpgao/proxy_pool/util"
 	"math/rand"
 	"strings"
 	"time"
@@ -151,7 +150,7 @@ func (r *redisDB) GetAll() (proxies []model.HttpProxy) {
 
 func (r *redisDB) Get(options map[string]string) (proxies []model.HttpProxy, err error) {
 	all := r.GetAll()
-	filters, err := util.GetNewFilter(options)
+	filters, err := model.GetNewFilter(options)
 	if err != nil {
 		return
 	}

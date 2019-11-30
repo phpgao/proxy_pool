@@ -1,192 +1,133 @@
 package server
 
 import (
-	"bytes"
-	"errors"
+	"crypto/tls"
 	"fmt"
-	"github.com/fatih/pool"
-	"github.com/phpgao/proxy_pool/ppool"
+	"github.com/phpgao/proxy_pool/model"
 	"io"
-	"log"
-	//"math/rand"
+	"math/rand"
 	"net"
+	"net/http"
 	"net/url"
 	"time"
 )
 
-func ServeReverse() {
-	addr := fmt.Sprintf("%s:%d", config.ProxyBind, config.ProxyPort)
-	logger.WithField("addr", addr).Info("listen and serve")
-
-	l, err := net.Listen("tcp", addr)
-	if err != nil {
-		logger.WithError(err).Fatal("ServeReverse")
-	}
-	for {
-		client, err := l.Accept()
-		if err != nil {
-			logger.WithError(err).Error("ServeReverse Accept")
-			continue
-		}
-
-		go handleClientRequest(client)
-	}
-}
-
-func handleClientRequest(client net.Conn) {
-	if client == nil {
-		return
-	}
-	defer client.Close()
-
-	var b [1024]byte
-	n, err := client.Read(b[:])
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	var connString = string(b[:bytes.IndexByte(b[:], '\r')])
-	var method, host, version string
-	_, _ = fmt.Sscanf(connString, "%s %s %s", &method, &host, &version)
-	hostPortURL, err := url.Parse(host)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	var schema = "http"
-	if hostPortURL.Opaque == "443" {
-		schema = "https"
-		// CONNECT cip.cc:443 HTTP/1.1\r\nHost: cip.cc:443\r\nUser-Agent: curl/7.64.1\r\nProxy-Connection: Keep-Alive\r\n\r\n
-		connString = fmt.Sprintf("%s %s %s\r\nHost: %s\r\nProxy-Connection: Keep-Alive\r\n\r\n", method, host, version, host)
-	}
-
+func handleTunneling(w http.ResponseWriter, r *http.Request) {
 	proxies, err := storeEngine.Get(map[string]string{
-		"schema": schema,
+		"schema": "https",
 	})
 	if err != nil {
-		logger.WithError(err).Error("err get proxies")
 		return
 	}
 	l := len(proxies)
 	if l == 0 {
-		logger.Error("no available proxy")
+		http.Error(w, "no valid proxy", http.StatusServiceUnavailable)
 		return
 	}
-	var server net.Conn
-	server, err = tryExchange(schema, connString)
+	proxy := proxies[rand.Intn(l)]
+
+	msg := fmt.Sprintf(model.ConnectCommand, http.MethodConnect, r.Host, "HTTP/1.1", r.Host)
+
+	destConn, err := net.DialTimeout("tcp", proxy.GetProxyUrl(), 10*time.Second)
 	if err != nil {
-		//if !os.IsTimeout(err) {
-		//	logger.WithError(err).Error("fatal error establish connect")
-		//} else {
-		//	logger.WithError(err).Error("timeout")
-		//}
-		logger.WithError(err).Error("fatal error establish connect")
-		if pc, ok := server.(*pool.PoolConn); ok {
-			pc.MarkUnusable()
-			_ = pc.Close()
-		}
+		http.Error(w, err.Error(), http.StatusServiceUnavailable)
+		return
+	}
+	_, err = destConn.Write([]byte(msg))
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusServiceUnavailable)
+		destConn.Close()
 		return
 	}
 
-	defer server.Close()
-	if method == "CONNECT" {
-		//_, err = fmt.Fprint(client, "HTTP/1.1 200 Connection established\r\n\r\n")
-		_, err = client.Write([]byte("HTTP/1.1 200 Connection established\r\n\r\n"))
-		if err != nil {
-			logger.WithError(err).Error("CONNECT")
-		}
-	} else {
-		_, err = server.Write(b[:n])
-		if err != nil {
-			logger.WithError(err).Error("Write")
-			if pc, ok := server.(*pool.PoolConn); ok {
-				pc.MarkUnusable()
-				pc.Close()
-			}
-			return
-		}
+	hijacker, ok := w.(http.Hijacker)
+	if !ok {
+		http.Error(w, "Hijacking not supported", http.StatusInternalServerError)
+		return
 	}
-
-	go func() {
-		defer server.Close()
-		defer client.Close()
-		buf := make([]byte, 2048)
-		_, err := io.CopyBuffer(server, client, buf)
-		if err != nil {
-			if pc, ok := server.(*pool.PoolConn); ok {
-				pc.MarkUnusable()
-				pc.Close()
-			}
-			logger.WithError(err).Debug("error io.Copy goroutine")
-		}
-
-	}()
-	buf := make([]byte, 2048)
-
-	_, err = io.CopyBuffer(client, server, buf)
-
+	clientConn, _, err := hijacker.Hijack()
 	if err != nil {
-		logger.WithError(err).Debug("error io.Copy outside")
-		if pc, ok := server.(*pool.PoolConn); ok {
-			pc.MarkUnusable()
-			pc.Close()
-		}
+		http.Error(w, err.Error(), http.StatusServiceUnavailable)
 	}
-
-	logger.WithField("chan", ppool.Http.Len()).Error("len")
-
-	return
+	go transfer(destConn, clientConn)
+	go transfer(clientConn, destConn)
 }
-
-func tryExchange(schema, connString string) (server net.Conn, err error) {
-	if schema == "http" {
-		server, err = ppool.Http.Get()
-	} else {
-		server, err = ppool.Https.Get()
-	}
-
+func transfer(destination io.WriteCloser, source io.ReadCloser) {
+	defer destination.Close()
+	defer source.Close()
+	io.Copy(destination, source)
+}
+func handleHTTP(w http.ResponseWriter, req *http.Request) {
+	proxies, err := storeEngine.Get(map[string]string{
+		"schema": "http",
+	})
 	if err != nil {
 		return
 	}
-
-	if server == nil {
-		logger.WithField("server.RemoteAddr()", server).WithField("err", err).Debug("server")
-		err = errors.New("nil server")
+	l := len(proxies)
+	if l == 0 {
+		http.Error(w, "no valid proxy", http.StatusServiceUnavailable)
 		return
 	}
+	proxy := proxies[rand.Intn(l)]
 
-	if schema == "https" {
-		// need to send connect again
+	Transport := http.Transport{
+		Proxy: func(request *http.Request) (url *url.URL, err error) {
+			proxyURL, err := url.Parse(proxy.GetProxyWithSchema())
+			if err != nil || proxyURL.Scheme == "" {
+				if u, err := url.Parse("http://" + proxy.GetProxyUrl()); err == nil {
+					proxyURL = u
+					err = nil
+				}
+			}
 
-		_, err = server.Write([]byte(connString))
-		if err != nil {
-			return
-		}
+			if err != nil {
+				return nil, fmt.Errorf("invalid proxy address %q: %v", proxy, err)
+			}
+			return proxyURL, nil
+		},
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).DialContext,
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
 
-		// read 200 code
-		var mb [1024]byte
-		if err = server.SetReadDeadline(time.Now().Add(time.Duration(config.ProxyTimeout) * time.Second)); err != nil {
-			return
-		}
-		_, err = server.Read(mb[:])
-		if err != nil {
-
-			return
-		}
-
-		var stringBack = string(mb[:bytes.IndexByte(mb[:], '\r')])
-		var code, version string
-
-		_, err = fmt.Sscanf(stringBack, "%s %s", &version, &code)
-
-		if err != nil {
-			return
-		}
-
-		if version != "HTTP/1.1" || code != "200" {
-			return nil, errors.New(stringBack)
+	resp, err := Transport.RoundTrip(req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusServiceUnavailable)
+		return
+	}
+	defer resp.Body.Close()
+	copyHeader(w.Header(), resp.Header)
+	w.WriteHeader(resp.StatusCode)
+	io.Copy(w, resp.Body)
+}
+func copyHeader(dst, src http.Header) {
+	for k, vv := range src {
+		for _, v := range vv {
+			dst.Add(k, v)
 		}
 	}
-	return
+}
+func ServeReverse() {
+	server := &http.Server{
+		Addr: fmt.Sprintf("%s:%d", config.ProxyBind, config.ProxyPort),
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method == http.MethodConnect {
+				handleTunneling(w, r)
+			} else {
+				handleHTTP(w, r)
+			}
+		}),
+		// Disable HTTP/2.
+		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
+	}
+	server.ListenAndServe()
 }
