@@ -59,29 +59,26 @@ func transfer(destination io.WriteCloser, source io.ReadCloser) {
 	io.Copy(destination, source)
 }
 func handleHTTP(w http.ResponseWriter, req *http.Request) {
-	proxies, err := storeEngine.Get(map[string]string{
-		"schema": "http",
-	})
-	if err != nil {
-		return
-	}
-	l := len(proxies)
-	if l == 0 {
-		http.Error(w, "no valid proxy", http.StatusServiceUnavailable)
-		return
-	}
-	proxy := proxies[rand.Intn(l)]
+	//proxies, err := storeEngine.Get(map[string]string{
+	//	"schema": "http",
+	//})
+	//if err != nil {
+	//	return
+	//}
+	//l := len(proxies)
+	//if l == 0 {
+	//	http.Error(w, "no valid proxy", http.StatusServiceUnavailable)
+	//	return
+	//}
+	//proxy := proxies[rand.Intn(l)]
 
+	proxy, err := storeEngine.Random()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusServiceUnavailable)
+	}
 	Transport := http.Transport{
 		Proxy: func(request *http.Request) (url *url.URL, err error) {
-			proxyURL, err := url.Parse(proxy.GetProxyWithSchema())
-			if err != nil || proxyURL.Scheme == "" {
-				if u, err := url.Parse("http://" + proxy.GetProxyUrl()); err == nil {
-					proxyURL = u
-					err = nil
-				}
-			}
-
+			proxyURL, err := url.Parse("http://" + proxy.GetProxyUrl())
 			if err != nil {
 				return nil, fmt.Errorf("invalid proxy address %q: %v", proxy, err)
 			}
