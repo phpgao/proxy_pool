@@ -3,6 +3,7 @@ package model
 import (
 	"bytes"
 	"crypto/md5"
+	"crypto/tls"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -129,8 +130,13 @@ func (p *HttpProxy) TestProxy(https bool) (err error) {
 	timeout := 6 * time.Second
 
 	client := &http.Client{
-		Transport: &http.Transport{Proxy: http.ProxyURL(&url.URL{Host: fmt.Sprintf("%s:%s", p.Ip, p.Port)})},
-		Timeout:   timeout}
+		Transport: &http.Transport{
+			Proxy: http.ProxyURL(&url.URL{
+				Host: fmt.Sprintf("%s:%s", p.Ip, p.Port)},
+			),
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+		Timeout: timeout}
 
 	var testUrl string
 	if https {

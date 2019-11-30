@@ -80,11 +80,11 @@ func (r *redisDB) UpdateSchema(proxy model.HttpProxy) (err error) {
 		return errors.New("proxy not exists")
 	}
 
-	err = r.client.HSet(key, "schema", proxy.Schema).Err()
+	err = r.client.HSet(key, "Schema", proxy.Schema).Err()
 	if err != nil {
 		return err
 	}
-	
+
 	return
 }
 

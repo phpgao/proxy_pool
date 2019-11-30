@@ -16,7 +16,6 @@ import (
 )
 
 var (
-	config         = util.ServerConf
 	logger         = util.GetLogger()
 	storeEngine    = db.GetDb()
 	IdleConnClosed = make(chan struct{})
@@ -39,7 +38,7 @@ type Resp struct {
 }
 
 func Serve() {
-	addr := fmt.Sprintf("%s:%d", config.ApiBind, config.ApiPort)
+	addr := fmt.Sprintf("%s:%d", util.ServerConf.ApiBind, util.ServerConf.ApiPort)
 
 	logger.WithField("addr", addr).Info("listen and serve")
 	Srv = &http.Server{Addr: addr, Handler: GetMux()}
@@ -50,7 +49,10 @@ func Serve() {
 		<-sigint
 		logger.Info("shutting down server")
 		if err := Srv.Shutdown(context.Background()); err != nil {
-			logger.WithError(err).Error("HTTP server Shutdown")
+			logger.WithError(err).Error("api server Shutdown")
+		}
+		if err := Server.Shutdown(context.Background()); err != nil {
+			logger.WithError(err).Error("proxy server Shutdown")
 		}
 		close(IdleConnClosed)
 	}()

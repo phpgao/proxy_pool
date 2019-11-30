@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/phpgao/proxy_pool/model"
+	"github.com/phpgao/proxy_pool/util"
 	"io"
 	"math/rand"
 	"net"
@@ -11,6 +12,8 @@ import (
 	"net/url"
 	"time"
 )
+
+var Server *http.Server
 
 func handleTunneling(w http.ResponseWriter, r *http.Request) {
 	proxies, err := storeEngine.Get(map[string]string{
@@ -28,7 +31,7 @@ func handleTunneling(w http.ResponseWriter, r *http.Request) {
 
 	msg := fmt.Sprintf(model.ConnectCommand, http.MethodConnect, r.Host, "HTTP/1.1", r.Host)
 
-	destConn, err := net.DialTimeout("tcp", proxy.GetProxyUrl(), 10*time.Second)
+	destConn, err := net.DialTimeout("tcp", proxy.GetProxyUrl(), time.Duration(util.ServerConf.HttpsConnectTimeOut)*time.Second)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusServiceUnavailable)
 		return
@@ -66,13 +69,9 @@ func handleHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	Transport := http.Transport{
-		Proxy: func(request *http.Request) (url *url.URL, err error) {
-			proxyURL, err := url.Parse("http://" + proxy.GetProxyUrl())
-			if err != nil {
-				return nil, fmt.Errorf("invalid proxy address %q: %v", proxy, err)
-			}
-			return proxyURL, nil
-		},
+		Proxy: http.ProxyURL(&url.URL{
+			Host: proxy.GetProxyUrl()},
+		),
 		DialContext: (&net.Dialer{
 			Timeout:   30 * time.Second,
 			KeepAlive: 30 * time.Second,
@@ -83,6 +82,8 @@ func handleHTTP(w http.ResponseWriter, req *http.Request) {
 		IdleConnTimeout:       90 * time.Second,
 		TLSHandshakeTimeout:   10 * time.Second,
 		ExpectContinueTimeout: 1 * time.Second,
+		// skip cert check
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
 	resp, err := Transport.RoundTrip(req)
@@ -105,8 +106,8 @@ func copyHeader(dst, src http.Header) {
 }
 
 func ServeReverse() {
-	server := &http.Server{
-		Addr: fmt.Sprintf("%s:%d", config.ProxyBind, config.ProxyPort),
+	Server = &http.Server{
+		Addr: fmt.Sprintf("%s:%d", util.ServerConf.ProxyBind, util.ServerConf.ProxyPort),
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.Method == http.MethodConnect {
 				handleTunneling(w, r)
@@ -117,5 +118,5 @@ func ServeReverse() {
 		// Disable HTTP/2.
 		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
 	}
-	server.ListenAndServe()
+	Server.ListenAndServe()
 }

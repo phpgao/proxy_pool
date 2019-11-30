@@ -39,16 +39,16 @@ func OldValidator() {
 								err := p.TestConnectMethod(conn)
 								if err != nil {
 									logger.WithError(err).Debug("error https test")
+								} else {
+									p.Schema = "https"
+									// save proxy to db
+									err = storeEngine.UpdateSchema(p)
+									if err != nil {
+										logger.WithError(err).WithField(
+											"proxy", p.GetProxyWithSchema()).Info("error update schema")
+									}
 								}
-								p.Schema = "https"
-								// save proxy to db
-								logger.WithField(
-									"proxy", p.GetProxyUrl()).Debug("update schema to https")
-								err = storeEngine.UpdateSchema(p)
-								if err != nil {
-									logger.WithError(err).WithField(
-										"proxy", p.GetProxyUrl()).Debug("error update schema")
-								}
+
 							} else {
 								_ = conn.Close()
 							}
@@ -58,7 +58,7 @@ func OldValidator() {
 						err = storeEngine.AddScore(p, score)
 						if err != nil {
 							logger.WithError(err).WithField(
-								"proxy", p.GetProxyUrl()).Error("error setting score")
+								"proxy", p.GetProxyWithSchema()).Error("error setting score")
 						}
 					}
 				}(*proxy)
