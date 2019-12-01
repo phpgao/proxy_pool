@@ -38,6 +38,8 @@ type Resp struct {
 }
 
 func Serve() {
+
+	var err error
 	addr := fmt.Sprintf("%s:%d", util.ServerConf.ApiBind, util.ServerConf.ApiPort)
 
 	logger.WithField("addr", addr).Info("api listen and serve")
@@ -48,16 +50,16 @@ func Serve() {
 		signal.Notify(sigint, os.Interrupt)
 		<-sigint
 		logger.Info("shutting down server")
-		if err := Srv.Shutdown(context.Background()); err != nil {
+		if err = Srv.Shutdown(context.Background()); err != nil {
 			logger.WithError(err).Error("api server Shutdown")
 		}
-		if err := Server.Shutdown(context.Background()); err != nil {
+		if err = Server.Shutdown(context.Background()); err != nil {
 			logger.WithError(err).Error("proxy server Shutdown")
 		}
 		close(IdleConnClosed)
 	}()
 
-	if err := Srv.ListenAndServe(); err != http.ErrServerClosed {
+	if err = Srv.ListenAndServe(); err != http.ErrServerClosed {
 		logger.Fatalf("HTTP server ListenAndServe: %v", err)
 	}
 

@@ -121,5 +121,7 @@ func ServeReverse() {
 	}
 	logger.WithField("addr", addr).Info("dynamic proxy listen and serve")
 
-	Server.ListenAndServe()
+	if err := Server.ListenAndServe(); err != http.ErrServerClosed {
+		logger.Fatalf("HTTP server ListenAndServe: %v", err)
+	}
 }

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/phpgao/proxy_pool/schedule"
 	"github.com/phpgao/proxy_pool/server"
+	"github.com/phpgao/proxy_pool/ulimit"
 	"github.com/phpgao/proxy_pool/util"
 	"github.com/phpgao/proxy_pool/validator"
-	"syscall"
 )
 
 var (
@@ -51,26 +51,5 @@ ______                                        _
 	logger.Info("Proxy_pool is starting")
 	logger.Infof("Proxy_pool VERSION == %s", VERSION)
 	logger.Info("Configuration loaded")
-	ulimit()
-}
-
-func ulimit() {
-	var rLimit syscall.Rlimit
-	err := syscall.Getrlimit(syscall.RLIMIT_NOFILE, &rLimit)
-	if err != nil {
-		logger.WithError(err).Error("Error Getting Rlimit")
-	}
-	rLimit.Max = uint64(util.ServerConf.UlimitMax)
-	rLimit.Cur = uint64(util.ServerConf.UlimitCur)
-	logger.WithField("ulimit", rLimit).Info("Try Setting Rlimit")
-
-	err = syscall.Setrlimit(syscall.RLIMIT_NOFILE, &rLimit)
-	if err != nil {
-		logger.WithError(err).Error("Error Setting Rlimit")
-	}
-	err = syscall.Getrlimit(syscall.RLIMIT_NOFILE, &rLimit)
-	if err != nil {
-		logger.WithError(err).Error("Error Getting Rlimit")
-	}
-	logger.WithField("ulimit", rLimit).Info("Rlimit Final")
+	ulimit.Set()
 }
