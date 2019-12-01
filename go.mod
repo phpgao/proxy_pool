@@ -3,6 +3,7 @@ module github.com/phpgao/proxy_pool
 go 1.12
 
 require (
+	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/antchfx/htmlquery v1.2.0
 	github.com/antchfx/xpath v1.0.0 // indirect
 	github.com/apex/log v1.1.1
@@ -15,7 +16,6 @@ require (
 	github.com/go-redis/redis/v7 v7.0.0-beta.4
 	github.com/golang/groupcache v0.0.0-20191027212112-611e8accdfc9 // indirect
 	github.com/ipipdotnet/ipdb-go v1.2.0
-	github.com/jinzhu/configor v1.1.1
 	github.com/koding/multiconfig v0.0.0-20171124222453-69c27309b2d7
 	github.com/moul/http2curl v1.0.0 // indirect
 	github.com/parnurzeal/gorequest v0.2.15

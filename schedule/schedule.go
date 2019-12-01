@@ -1,6 +1,5 @@
 package schedule
 
-import "C"
 import (
 	"github.com/phpgao/proxy_pool/db"
 	"github.com/phpgao/proxy_pool/queue"
