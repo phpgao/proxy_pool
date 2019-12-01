@@ -40,7 +40,7 @@ type Resp struct {
 func Serve() {
 	addr := fmt.Sprintf("%s:%d", util.ServerConf.ApiBind, util.ServerConf.ApiPort)
 
-	logger.WithField("addr", addr).Info("listen and serve")
+	logger.WithField("addr", addr).Info("api listen and serve")
 	Srv = &http.Server{Addr: addr, Handler: GetMux()}
 
 	go func() {

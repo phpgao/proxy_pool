@@ -34,6 +34,8 @@ type Config struct {
 	TcpTestTimeOut      int    `default:"5"`
 	HttpsConnectTimeOut int    `default:"5"`
 	OnlyChina           bool   `default:"true"`
+	UlimitCur           int    `default:"65535"`
+	UlimitMax           int    `default:"65535"`
 }
 
 func init() {

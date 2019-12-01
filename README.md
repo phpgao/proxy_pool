@@ -10,12 +10,11 @@ A simple proxy pool written in go
  - 定时验证可用代理
  - 支持动态代理(https仅支持connect)
  - 使用采集到的代理访问代理网站
+ - 使用命令行环境变量进行配置
 
 ## 依赖
 
- - golang
  - redis
- - ulimit
 
 ## 使用说明
 
@@ -56,6 +55,7 @@ curl https://cip.cc -x 127.0.0.1:8089
  - tcp池
  - go test
  - 更精细的超时控制
+ - 主从模式
 
 ## 反馈
 

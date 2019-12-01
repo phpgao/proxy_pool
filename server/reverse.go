@@ -106,8 +106,9 @@ func copyHeader(dst, src http.Header) {
 }
 
 func ServeReverse() {
+	addr := fmt.Sprintf("%s:%d", util.ServerConf.ProxyBind, util.ServerConf.ProxyPort)
 	Server = &http.Server{
-		Addr: fmt.Sprintf("%s:%d", util.ServerConf.ProxyBind, util.ServerConf.ProxyPort),
+		Addr: addr,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.Method == http.MethodConnect {
 				handleTunneling(w, r)
@@ -118,5 +119,7 @@ func ServeReverse() {
 		// Disable HTTP/2.
 		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
 	}
+	logger.WithField("addr", addr).Info("dynamic proxy listen and serve")
+
 	Server.ListenAndServe()
 }

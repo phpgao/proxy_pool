@@ -20,10 +20,6 @@ var (
 	logger = util.GetLogger()
 )
 
-func init() {
-	logger.Info("init scheduler...")
-}
-
 func (s *Scheduler) Run() {
 	logger.Info("adding scheduler...")
 	for _, _spider := range s.spiders {
@@ -41,7 +37,6 @@ func (s *Scheduler) Run() {
 		s.report("")
 	})
 	s.cron.Start()
-	s.report("")
 }
 
 func (s *Scheduler) report(spiderKey string) {
