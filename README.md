@@ -11,6 +11,7 @@ A simple proxy pool written in go
  - 支持动态代理(https仅支持connect)
  - 使用采集到的代理访问代理网站
  - 使用命令行环境变量进行配置
+ - 当没有IP可用时使用本地转发 - new
 
 ## 依赖
 
