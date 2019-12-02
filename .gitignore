@@ -83,3 +83,6 @@ $RECYCLE.BIN/
 .idea
 proxy_pool
 config.json
+/proxy_pool_darwin_amd64
+/proxy_pool_linux_amd64
+/proxy_pool_windows_amd64.exe
