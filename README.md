@@ -103,11 +103,11 @@ curl https://cip.cc -x 127.0.0.1:8089
  1. 爬虫分为html、json、re还有text型
  1. 爬虫复用了Spider结构体，新爬虫必须实现的如下
  
- Cron --> 定义了启动间隔
- Name --> 定义了爬虫名
- Run -->  通用方法，用来执行下载和解析，照抄即可
- StartUrl --> 返回目标网站的入口页面
- Parse --> 接收最终的html代理，返回[]model.HttpProxy实例的指针
+   - Cron --> 定义了启动间隔
+   - Name --> 定义了爬虫名
+   - Run -->  通用方法，用来执行下载和解析，照抄即可
+   - StartUrl --> 返回目标网站的入口页面
+   - Parse --> 接收最终的html代理，返回[]model.HttpProxy实例的指针
  
 ### 关于动态代理
 
