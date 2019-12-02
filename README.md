@@ -25,8 +25,13 @@ A simple proxy pool written in go
 go build
 
 cp config_example.json config.json
-
 # 修改redis和端口配置
+
+# 感谢ipip.net提供精准的IP数据
+# 到 https://www.ipip.net/product/ip.html#ipv4city 下载最新的免费ip库
+# 或者 使用代码库中的 ipipfree.ipdb
+cp ipipdb ipipfree.ipdb
+
 
 ./proxy_pool
 ```
