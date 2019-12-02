@@ -28,8 +28,12 @@ cp config_example.json config.json
 # 修改redis和端口配置
 
 # 感谢ipip.net提供精准的IP数据(已内置)
-
 ./proxy_pool
+
+# 帮助
+./proxy_pool_linux_amd64 --help
+
+./proxy_pool_linux_amd64 -ip 8.8.8.8 -port 6379 -auth laogao
 ```
 
 ### api
@@ -58,6 +62,7 @@ curl https://cip.cc -x 127.0.0.1:8089
  - go test
  - 更精细的超时控制
  - 主从模式
+ - 代理认证
 
 ## 反馈
 
