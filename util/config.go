@@ -19,19 +19,19 @@ type Config struct {
 	NewQueue            int    `default:"200"`        //验证新代理队列
 	OldQueue            int    `default:"300"`        //验证旧代理队列
 	Debug               bool   `default:"false"`      //调试模式
-	Timeout             int    `default:"10"`         //爬虫默认超时
 	CheckInterval       int    `default:"60"`         //检查代理间隔
 	Expire              int    `default:"0"`          //redis key默认超时
 	Score               int    `default:"60"`         //新代理默认分数
 	Retry               int    `default:"3"`          //获取代理重试次数
-	TcpTimeout          int    `default:"5"`          //tcp池的默认超时时间
-	ProxyTimeout        int    `default:"5"`          //测试Connect方法超时时间
+	Timeout             int    `default:"10"`         //爬虫默认超时
+	TcpTimeout          int    `default:"4"`          //tcp池的默认超时时间
+	TcpTestTimeOut      int    `default:"4"`          //tcp测试的超时时间
+	ProxyTimeout        int    `default:"4"`          //测试Connect方法超时时间
+	HttpsConnectTimeOut int    `default:"4"`          //反向代理时默认超时时间
 	ApiBind             string `default:"0.0.0.0"`    //API的IP
 	ApiPort             int    `default:"8088"`       //API的端口
 	ProxyBind           string `default:"0.0.0.0"`    //动态代理的IP
 	ProxyPort           int    `default:"8089"`       //动态代理的端口
-	TcpTestTimeOut      int    `default:"5"`          //tcp测试的超时时间
-	HttpsConnectTimeOut int    `default:"5"`          //反代时默认超时时间
 	OnlyChina           bool   `default:"true"`       //只处理中国的IP
 	UlimitCur           int    `default:"65535"`      //ulimit
 	UlimitMax           int    `default:"65535"`      //ulimit

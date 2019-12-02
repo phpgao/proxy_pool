@@ -15,7 +15,7 @@ import (
 
 var (
 	Server  *http.Server
-	timeOut = time.Duration(util.ServerConf.HttpsConnectTimeOut)
+	timeOut = time.Duration(util.ServerConf.HttpsConnectTimeOut) * time.Second
 )
 
 func handleTunneling(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +31,7 @@ func handleTunneling(w http.ResponseWriter, r *http.Request) {
 	var destConn net.Conn
 	if l == 0 {
 		logger.Debug("serve as a https proxy")
-		destConn, err = net.DialTimeout("tcp", r.Host, timeOut*time.Second)
+		destConn, err = net.DialTimeout("tcp", r.Host, timeOut)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
 			return
@@ -43,7 +43,7 @@ func handleTunneling(w http.ResponseWriter, r *http.Request) {
 
 		msg := fmt.Sprintf(model.ConnectCommand, http.MethodConnect, r.Host, "HTTP/1.1", r.Host)
 
-		destConn, err = net.DialTimeout("tcp", proxy.GetProxyUrl(), timeOut*time.Second)
+		destConn, err = net.DialTimeout("tcp", proxy.GetProxyUrl(), timeOut)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
 			return
@@ -55,6 +55,15 @@ func handleTunneling(w http.ResponseWriter, r *http.Request) {
 			destConn.Close()
 			return
 		}
+
+		err = destConn.SetReadDeadline(time.Now().Add(timeOut))
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusServiceUnavailable)
+			destConn.Close()
+			return
+		}
+
 	}
 
 	hijacker, ok := w.(http.Hijacker)
@@ -111,13 +120,13 @@ func handleHTTP(w http.ResponseWriter, req *http.Request) {
 				Host: proxy.GetProxyUrl()},
 			),
 			DialContext: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
+				Timeout:   timeOut,
+				KeepAlive: timeOut,
 			}).DialContext,
 			ForceAttemptHTTP2:     true,
 			MaxIdleConns:          100,
-			IdleConnTimeout:       90 * time.Second,
-			TLSHandshakeTimeout:   10 * time.Second,
+			IdleConnTimeout:       timeOut,
+			TLSHandshakeTimeout:   timeOut,
 			ExpectContinueTimeout: 1 * time.Second,
 			// skip cert check
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
