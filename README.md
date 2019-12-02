@@ -23,7 +23,19 @@ A simple proxy pool written in go
 
 ```bash
 go build
+```
 
+### 下载
+
+```bash
+# 版本 0.3.2
+wget https://github.com/phpgao/proxy_pool/releases/download/0.3.2/proxy_pool_linux_amd64
+chmod a+x proxy_pool_linux_amd64
+```
+
+### 使用
+
+```bash
 cp config_example.json config.json
 # 修改redis和端口配置
 
