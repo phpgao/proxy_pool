@@ -15,7 +15,6 @@ import (
 )
 
 var (
-	config   = util.ServerConf
 	logger   = util.GetLogger()
 	regIp    = `(?:(?:[0,1]?\d?\d|2[0-4]\d|25[0-5])\.){3}(?:[0,1]?\d?\d|2[0-4]\d|25[0-5])`
 	regProxy = `(?:(?:[0,1]?\d?\d|2[0-4]\d|25[0-5])\.){3}(?:[0,1]?\d?\d|2[0-4]\d|25[0-5]):\d{0,5}`
@@ -60,7 +59,7 @@ func (s *Spider) Cron() string {
 	panic("implement me")
 }
 func (s *Spider) TimeOut() int {
-	return config.Timeout
+	return util.ServerConf.Timeout
 }
 
 func (s *Spider) Name() string {
@@ -158,7 +157,7 @@ func getProxy(s Crawler) {
 					logger.WithFields(log.Fields{
 						"url": proxyURL,
 					}).Debug("try fetching url with proxy")
-					for i := 1; i <= 3; i++ {
+					for i := 1; i <= util.ServerConf.Retry; i++ {
 						fetchFlag = false
 						parseFlag = false
 						randomProxy, err := storeEngine.Random()
@@ -225,7 +224,7 @@ func getProxy(s Crawler) {
 					tmpMap[newProxy.GetKey()] = 1
 					newProxy.From = s.Name()
 					if newProxy.Score == 0 {
-						newProxy.Score = config.Score
+						newProxy.Score = util.ServerConf.Score
 					}
 					if model.FilterProxy(newProxy) {
 						inputChan <- newProxy

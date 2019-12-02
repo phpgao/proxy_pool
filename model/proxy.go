@@ -222,8 +222,8 @@ func (p *HttpProxy) TestConnectMethod(conn net.Conn) (err error) {
 		return
 	}
 
-	if version != "HTTP/1.1" || code != "200" {
-		return errors.New("bad response " + stringBack)
+	if (version != "HTTP/1.1" && version != "HTTP/1.0") || code != "200" {
+		return errors.New("bad response = " + stringBack)
 	}
 
 	return

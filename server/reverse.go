@@ -21,6 +21,7 @@ var (
 func handleTunneling(w http.ResponseWriter, r *http.Request) {
 	proxies, err := storeEngine.Get(map[string]string{
 		"schema": "https",
+		"score":  string(util.ServerConf.ScoreAtLeast),
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusServiceUnavailable)
@@ -37,7 +38,7 @@ func handleTunneling(w http.ResponseWriter, r *http.Request) {
 		}
 		w.WriteHeader(http.StatusOK)
 
-	}else{
+	} else {
 		proxy := proxies[rand.Intn(l)]
 
 		msg := fmt.Sprintf(model.ConnectCommand, http.MethodConnect, r.Host, "HTTP/1.1", r.Host)
@@ -55,7 +56,6 @@ func handleTunneling(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
 
 	hijacker, ok := w.(http.Hijacker)
 	if !ok {
@@ -76,17 +76,36 @@ func transfer(destination io.WriteCloser, source io.ReadCloser) {
 	io.Copy(destination, source)
 }
 func handleHTTP(w http.ResponseWriter, req *http.Request) {
-	proxy, err := storeEngine.Random()
+	var proxy model.HttpProxy
+	var err error
+	var Transport http.RoundTripper
+	if util.ServerConf.ScoreAtLeast == 0 {
+		proxy, err = storeEngine.Random()
+	} else {
+		proxies, err := storeEngine.Get(map[string]string{
+			"score": string(util.ServerConf.ScoreAtLeast),
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusServiceUnavailable)
+			return
+		}
+		l := len(proxies)
+		if l == 0 {
+			proxy = model.HttpProxy{}
+		} else {
+			proxy = proxies[rand.Intn(l)]
+		}
+	}
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusServiceUnavailable)
 		return
 	}
-	var Transport http.RoundTripper
-	// if null
+
 	if (model.HttpProxy{}) == proxy {
 		logger.Debug("serve as a http proxy")
 		Transport = http.DefaultTransport
-	}else{
+	} else {
 		Transport = &http.Transport{
 			Proxy: http.ProxyURL(&url.URL{
 				Host: proxy.GetProxyUrl()},

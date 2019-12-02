@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"github.com/apex/log"
 	"github.com/phpgao/proxy_pool/model"
 	"github.com/phpgao/proxy_pool/queue"
 	"sync"
@@ -35,25 +36,26 @@ func OldValidator() {
 						if conn != nil {
 							score = 10
 							// test https
-							if !p.IsHttps() {
-								err := p.TestConnectMethod(conn)
-								if err != nil {
-									logger.WithError(err).Debug("error https test")
-								} else {
-									p.Schema = "https"
-									// save proxy to db
-									err = storeEngine.UpdateSchema(p)
-									if err != nil {
-										logger.WithError(err).WithField(
-											"proxy", p.GetProxyWithSchema()).Info("error update schema")
-									}
+
+							err := p.TestConnectMethod(conn)
+							if err != nil {
+								logger.WithError(err).WithField("proxy", p.GetProxyWithSchema()).Debug("error https test")
+								if p.IsHttps() {
+									score = -20
 								}
-
 							} else {
-								_ = conn.Close()
+								p.Schema = "https"
+								// save proxy to db
+								err = storeEngine.UpdateSchema(p)
+								if err != nil {
+									logger.WithError(err).WithField("proxy", p.GetProxyWithSchema()).Info("error update schema")
+								}
 							}
-
 						}
+						logger.WithFields(log.Fields{
+							"score": score,
+							"proxy": p.GetProxyWithSchema(),
+						}).Debug("set score")
 
 						err = storeEngine.AddScore(p, score)
 						if err != nil {
