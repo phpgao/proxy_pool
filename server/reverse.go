@@ -13,36 +13,49 @@ import (
 	"time"
 )
 
-var Server *http.Server
+var (
+	Server  *http.Server
+	timeOut = time.Duration(util.ServerConf.HttpsConnectTimeOut)
+)
 
 func handleTunneling(w http.ResponseWriter, r *http.Request) {
 	proxies, err := storeEngine.Get(map[string]string{
 		"schema": "https",
 	})
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusServiceUnavailable)
 		return
 	}
 	l := len(proxies)
+	var destConn net.Conn
 	if l == 0 {
-		http.Error(w, "no valid proxy", http.StatusServiceUnavailable)
-		return
-	}
-	proxy := proxies[rand.Intn(l)]
+		logger.Debug("serve as a https proxy")
+		destConn, err = net.DialTimeout("tcp", r.Host, timeOut*time.Second)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusServiceUnavailable)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 
-	msg := fmt.Sprintf(model.ConnectCommand, http.MethodConnect, r.Host, "HTTP/1.1", r.Host)
+	}else{
+		proxy := proxies[rand.Intn(l)]
 
-	destConn, err := net.DialTimeout("tcp", proxy.GetProxyUrl(), time.Duration(util.ServerConf.HttpsConnectTimeOut)*time.Second)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusServiceUnavailable)
-		return
-	}
-	_, err = destConn.Write([]byte(msg))
+		msg := fmt.Sprintf(model.ConnectCommand, http.MethodConnect, r.Host, "HTTP/1.1", r.Host)
 
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusServiceUnavailable)
-		destConn.Close()
-		return
+		destConn, err = net.DialTimeout("tcp", proxy.GetProxyUrl(), timeOut*time.Second)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusServiceUnavailable)
+			return
+		}
+		_, err = destConn.Write([]byte(msg))
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusServiceUnavailable)
+			destConn.Close()
+			return
+		}
 	}
+
 
 	hijacker, ok := w.(http.Hijacker)
 	if !ok {
@@ -68,22 +81,28 @@ func handleHTTP(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusServiceUnavailable)
 		return
 	}
-	Transport := http.Transport{
-		Proxy: http.ProxyURL(&url.URL{
-			Host: proxy.GetProxyUrl()},
-		),
-		DialContext: (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
-			DualStack: true,
-		}).DialContext,
-		ForceAttemptHTTP2:     true,
-		MaxIdleConns:          100,
-		IdleConnTimeout:       90 * time.Second,
-		TLSHandshakeTimeout:   10 * time.Second,
-		ExpectContinueTimeout: 1 * time.Second,
-		// skip cert check
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	var Transport http.RoundTripper
+	// if null
+	if (model.HttpProxy{}) == proxy {
+		logger.Debug("serve as a http proxy")
+		Transport = http.DefaultTransport
+	}else{
+		Transport = &http.Transport{
+			Proxy: http.ProxyURL(&url.URL{
+				Host: proxy.GetProxyUrl()},
+			),
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).DialContext,
+			ForceAttemptHTTP2:     true,
+			MaxIdleConns:          100,
+			IdleConnTimeout:       90 * time.Second,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+			// skip cert check
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
 	}
 
 	resp, err := Transport.RoundTrip(req)

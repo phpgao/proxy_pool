@@ -218,6 +218,9 @@ func (r *redisDB) Random() (p model.HttpProxy, err error) {
 		logger.WithError(err).WithField("keys", keys).Error("error get keys from redis")
 		return
 	}
+	if len(keys) == 0 {
+		return
+	}
 	//rand.Seed(time.Now().Unix())
 	key := keys[rand.Intn(len(keys))]
 	proxy := r.client.HGetAll(key).Val()
