@@ -34,7 +34,7 @@ cp config_example.json config.json
 ./proxy_pool_linux_amd64 --help
 
 # 命令行指定配置
-./proxy_pool_linux_amd64 -ip 8.8.8.8 -port 6379 -auth laogao
+./proxy_pool_linux_amd64 -host 8.8.8.8 -port 6379 -auth laogao
 
 # 后台运行
 nohup ./proxy_pool_linux_amd64 > /dev/null 2>&1 &
