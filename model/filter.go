@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/phpgao/proxy_pool/ipdb"
 	"github.com/phpgao/proxy_pool/util"
 	"net"
 	"strconv"
@@ -85,7 +86,7 @@ func FilterProxy(proxy *HttpProxy) bool {
 		return false
 	}
 
-	ipInfo, err := util.Db.FindInfo(proxy.Ip, "CN")
+	ipInfo, err := ipdb.Db.FindInfo(proxy.Ip, "CN")
 	if err != nil {
 		logger.WithField("ip", proxy.Ip).WithError(err).Warn("can not find ip info")
 		return false

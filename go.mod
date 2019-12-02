@@ -13,6 +13,7 @@ require (
 	github.com/fatih/camelcase v1.0.0 // indirect
 	github.com/fatih/pool v3.0.0+incompatible
 	github.com/fatih/structs v1.1.0
+	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/go-redis/redis/v7 v7.0.0-beta.4
 	github.com/golang/groupcache v0.0.0-20191027212112-611e8accdfc9 // indirect
 	github.com/ipipdotnet/ipdb-go v1.2.0
