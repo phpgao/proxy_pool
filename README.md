@@ -28,8 +28,8 @@ go build
 ### 下载
 
 ```bash
-# 版本 0.3.2
-wget https://github.com/phpgao/proxy_pool/releases/download/0.3.2/proxy_pool_linux_amd64
+# 版本 v0.3.3
+wget https://github.com/phpgao/proxy_pool/releases/download/v0.3.3/proxy_pool_linux_amd64
 chmod a+x proxy_pool_linux_amd64
 ```
 
