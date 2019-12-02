@@ -47,6 +47,7 @@ func NewValidator() {
 					if err != nil {
 						logger.WithError(err).WithField(
 							"proxy", p.GetProxyWithSchema()).Debug("error test http proxy")
+						return
 					} else {
 						// https test
 						err := p.TestProxy(true)
@@ -54,8 +55,8 @@ func NewValidator() {
 							logger.WithError(err).WithField(
 								"proxy", p.GetProxyWithSchema()).Debug("error test https proxy")
 						}
-						storeEngine.Add(*p)
 					}
+					storeEngine.Add(*p)
 				}(proxy)
 			}
 		}()
