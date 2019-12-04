@@ -1,0 +1,23 @@
+version: '2'
+
+services:
+  proxy_pool:
+    container_name: proxy_pool
+    image: endoffight/proxy_pool:tow
+    restart: always
+    ports:
+      - 8088:8088
+      - 8089:8089
+    networks:
+      - proxy-pool
+    environment:
+      CONFIG_HOST: redis
+
+  redis:
+    container_name: proxy_redis
+    image: redis:5.0.7-alpine3.10
+    networks:
+      - proxy-pool
+
+networks:
+  proxy-pool:
