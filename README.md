@@ -144,6 +144,10 @@ curl https://cip.cc -x 127.0.0.1:8089
 
 期待大家的测试和反馈！
 
+## 更多
+
+如果你在使用scrapy，为什么不试试[scrapy-random-useragent-pro](https://github.com/phpgao/scrapy-random-useragent-pro)呢？
+
 ## 感谢
  
 - https://www.ipip.net/
