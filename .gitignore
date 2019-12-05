@@ -86,3 +86,10 @@ config.json
 /proxy_pool_darwin_amd64
 /proxy_pool_linux_amd64
 /proxy_pool_windows_amd64.exe
+/proxy_pool_linux_mips64le
+/proxy_pool_linux_arm64
+/proxy_pool_linux_mipsle
+/proxy_pool_linux_mips64
+/proxy_pool_linux_arm
+/proxy_pool_linux_386
+/proxy_pool_linux_mips
