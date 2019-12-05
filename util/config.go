@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"github.com/koding/multiconfig"
+	"os"
 	"time"
 )
 
@@ -39,10 +40,27 @@ type Config struct {
 }
 
 func init() {
-	m := multiconfig.NewWithPath("config.json")
+	var m *multiconfig.DefaultLoader
+	for _, file := range []string{"config.yml", "config.yaml", "config.json", "config.toml"} {
+		if fileExists(file) {
+			m = multiconfig.NewWithPath(file)
+			break
+		}
+	}
+	if m == nil {
+		m = multiconfig.New()
+	}
 	serverConf := new(Config)
 	m.MustLoad(serverConf)
 	ServerConf = serverConf
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
 
 func (c Config) GetInternalCron() string {
