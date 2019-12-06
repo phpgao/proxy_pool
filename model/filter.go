@@ -10,35 +10,23 @@ import (
 
 func filterOfSchema(v string) func(HttpProxy) bool {
 	return func(proxy HttpProxy) bool {
-		if proxy.Schema == strings.ToLower(v) {
-			return true
-		}
-		return false
+		return proxy.Schema == strings.ToLower(v)
 	}
 }
 
 func filterOfCn(v string) func(HttpProxy) bool {
 	return func(proxy HttpProxy) bool {
-		if proxy.Country == strings.ToLower(v) {
-			return true
-		}
-		return false
+		return proxy.Country == strings.ToLower(v)
 	}
 }
 func filterOfScore(v int) func(HttpProxy) bool {
 	return func(proxy HttpProxy) bool {
-		if proxy.Score >= v {
-			return true
-		}
-		return false
+		return proxy.Score >= v
 	}
 }
 func filterOfSource(v string) func(HttpProxy) bool {
 	return func(proxy HttpProxy) bool {
-		if strings.ToLower(proxy.From) == strings.ToLower(v) {
-			return true
-		}
-		return false
+		return strings.EqualFold(proxy.From, v)
 	}
 }
 

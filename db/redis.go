@@ -187,7 +187,7 @@ func (r *redisDB) Get(options map[string]string) (proxies []model.HttpProxy, err
 
 func Match(filters []func(model.HttpProxy) bool, p model.HttpProxy) bool {
 	for _, fc := range filters {
-		if fc(p) == false {
+		if !fc(p) {
 			return false
 		}
 	}

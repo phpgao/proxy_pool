@@ -157,7 +157,7 @@ func (p *HttpProxy) TestProxy(https bool) (err error) {
 	}()
 
 	if 200 != resp.StatusCode {
-		return errors.New(fmt.Sprintf("http code %d", resp.StatusCode))
+		return fmt.Errorf("http code %d", resp.StatusCode)
 	}
 
 	b, err := ioutil.ReadAll(resp.Body)
@@ -166,7 +166,7 @@ func (p *HttpProxy) TestProxy(https bool) (err error) {
 	}
 	html := strings.TrimSpace(string(b))
 	if html != p.GetIp() {
-		return errors.New(fmt.Sprintf("error resp"))
+		return errors.New("html doesn't match")
 	}
 	latency := time.Now().UnixNano() - startAt.UnixNano()
 	p.Latency = int(latency / 1000 / 1000)

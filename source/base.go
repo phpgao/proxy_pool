@@ -1,7 +1,6 @@
 package source
 
 import (
-	"errors"
 	"fmt"
 	"github.com/antchfx/htmlquery"
 	"github.com/apex/log"
@@ -49,7 +48,7 @@ func (s *Spider) errAndStatus(errs []error, resp gorequest.Response) (err error)
 		return
 	}
 	if resp.StatusCode != 200 {
-		return errors.New(fmt.Sprintf("http code: %d", resp.StatusCode))
+		return fmt.Errorf("http code: %d", resp.StatusCode)
 	}
 
 	return

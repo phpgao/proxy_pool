@@ -42,14 +42,14 @@ func (s *Scheduler) report(spiderKey string) {
 	if spiderKey != "" {
 		entryId := s.cronMap[spiderKey]
 		if ok := s.cron.Entry(entryId).Next.IsZero(); ok {
-			logger.Infof("Spider % hasn't run yet!")
+			logger.Infof("Spider %s hasn't run yet!", spiderKey)
 		} else {
 			logger.Infof("Next tick of %s --> %s", spiderKey, s.cron.Entry(entryId).Next.Format("2006-01-02 15:04:05"))
 		}
 	} else {
 		for spiderKey, entryId := range s.cronMap {
 			if ok := s.cron.Entry(entryId).Next.IsZero(); ok {
-				logger.Infof("Spider % hasn't run yet!")
+				logger.Infof("Spider %s hasn't run yet!", spiderKey)
 			} else {
 				logger.Infof("Next tick of %s --> %s", spiderKey, s.cron.Entry(entryId).Next.Format("2006-01-02 15:04:05"))
 			}
