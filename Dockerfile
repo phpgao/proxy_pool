@@ -9,6 +9,5 @@ RUN GOPROXY=https://goproxy.cn CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o
 
 FROM alpine:3.10
 COPY --from=build /app/proxy_pool /app/proxy_pool
-RUN touch /app/config.json && echo "{}" > /app/config.json
 WORKDIR /app
 ENTRYPOINT ["/app/proxy_pool"]
