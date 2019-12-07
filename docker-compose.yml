@@ -15,9 +15,10 @@ services:
 
   redis:
     container_name: proxy_redis
+    command: redis-server --appendonly yes
     image: redis:5.0-alpine3.10
     volumes:
-      - ./data:/data
+      - "./data:/data"
     networks:
       - proxy-pool
 

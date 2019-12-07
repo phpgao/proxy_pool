@@ -33,7 +33,6 @@ func main() {
 
 	go server.ServeReverse()
 	server.Serve()
-
 }
 
 func ShowWelcome() {
