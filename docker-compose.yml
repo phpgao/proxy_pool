@@ -15,7 +15,9 @@ services:
 
   redis:
     container_name: proxy_redis
-    image: redis:5.0.7-alpine3.10
+    image: redis:5.0-alpine3.10
+    volumes:
+      - ./data:/data
     networks:
       - proxy-pool
 
