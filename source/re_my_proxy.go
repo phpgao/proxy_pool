@@ -7,33 +7,34 @@ import (
 	"strings"
 )
 
-func (s *newproxy) StartUrl() []string {
+func (s *myProxy) StartUrl() []string {
 	return []string{
-		"http://newproxy.org.ru/page.php?page_id=1",
+		"https://www.my-proxy.com/free-proxy-list.html",
+		"https://www.my-proxy.com/free-proxy-list-2.html",
 	}
 }
 
-func (s *newproxy) GetReferer() string {
-	return "http://newproxy.org.ru"
+func (s *myProxy) GetReferer() string {
+	return "https://www.my-proxy.com/"
 }
 
-type newproxy struct {
+type myProxy struct {
 	Spider
 }
 
-func (s *newproxy) Cron() string {
+func (s *myProxy) Cron() string {
 	return "@every 10m"
 }
 
-func (s *newproxy) Name() string {
-	return "newproxy"
+func (s *myProxy) Name() string {
+	return "my_proxy"
 }
 
-func (s *newproxy) Run() {
+func (s *myProxy) Run() {
 	getProxy(s)
 }
 
-func (s *newproxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s *myProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	reg := regexp.MustCompile(util.RegProxy)
 	rs := reg.FindAllString(body, -1)
 

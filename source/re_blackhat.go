@@ -7,34 +7,34 @@ import (
 	"strings"
 )
 
-func (s *dogdev) StartUrl() []string {
+func (s *blackHat) StartUrl() []string {
 	return []string{
-		"http://dogdev.net/Proxy/all",
+		"http://www.blackhat.be/cpt/proxy.lst",
 	}
 }
 
-func (s *dogdev) GetReferer() string {
-	return "http://dogdev.net/"
+func (s *blackHat) GetReferer() string {
+	return "http://www.blackhat.be/cpt/proxy.lst"
 }
 
-type dogdev struct {
+type blackHat struct {
 	Spider
 }
 
-func (s *dogdev) Cron() string {
+func (s *blackHat) Cron() string {
 	return "@every 1h"
 }
 
-func (s *dogdev) Name() string {
-	return "dogdev"
+func (s *blackHat) Name() string {
+	return "blackHat"
 }
 
-func (s *dogdev) Run() {
+func (s *blackHat) Run() {
 	getProxy(s)
 }
 
-func (s *dogdev) Parse(body string) (proxies []*model.HttpProxy, err error) {
-	reg := regexp.MustCompile(util.RegProxy)
+func (s *blackHat) Parse(body string) (proxies []*model.HttpProxy, err error) {
+	reg := regexp.MustCompile(util.RegProxyWithoutColon)
 	rs := reg.FindAllString(body, -1)
 
 	for _, proxy := range rs {

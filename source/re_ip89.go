@@ -3,6 +3,7 @@ package source
 import (
 	"fmt"
 	"github.com/phpgao/proxy_pool/model"
+	"github.com/phpgao/proxy_pool/util"
 	"net/url"
 	"regexp"
 	"strings"
@@ -59,7 +60,7 @@ func (s *ip89) Run() {
 }
 
 func (s *ip89) Parse(body string) (proxies []*model.HttpProxy, err error) {
-	reg := regexp.MustCompile(regProxy)
+	reg := regexp.MustCompile(util.RegProxy)
 	rs := reg.FindAllString(body, -1)
 
 	for _, proxy := range rs {

@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	logger         = util.GetLogger()
+	logger         = util.GetLogger("server")
 	storeEngine    = db.GetDb()
 	IdleConnClosed = make(chan struct{})
 	Srv            *http.Server

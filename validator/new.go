@@ -10,7 +10,6 @@ import (
 
 var (
 	config      = util.ServerConf
-	logger      = util.GetLogger()
 	storeEngine = db.GetDb()
 	lockMap     = sync.Map{}
 )
@@ -18,7 +17,6 @@ var (
 func NewValidator() {
 	q := queue.GetNewChan()
 	var wg sync.WaitGroup
-
 	for i := 0; i < config.OldQueue; i++ {
 		wg.Add(1)
 		go func() {
@@ -26,6 +24,8 @@ func NewValidator() {
 				proxy := <-q
 
 				func(p *model.HttpProxy) {
+					var err error
+					logger := util.GetLogger("validator_new").WithField("from", p.From)
 					key := p.GetKey()
 					if _, ok := lockMap.Load(key); ok {
 						return
@@ -39,11 +39,14 @@ func NewValidator() {
 					if storeEngine.Exists(*proxy) {
 						return
 					}
-					if !p.SimpleTcpTest(config.GetTcpTestTimeOut()) {
+
+					err = p.SimpleTcpTest(config.GetTcpTestTimeOut())
+					if err != nil {
+						logger.WithError(err).WithField("proxy", p.GetProxyUrl()).Debug("error test tcp")
 						return
 					}
 					// http test
-					err := p.TestProxy(false)
+					err = p.TestProxy(false)
 					if err != nil {
 						logger.WithError(err).WithField(
 							"proxy", p.GetProxyWithSchema()).Debug("error test http proxy")

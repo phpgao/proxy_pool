@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/antchfx/htmlquery"
 	"github.com/phpgao/proxy_pool/model"
+	"github.com/phpgao/proxy_pool/util"
 	"github.com/robertkrimen/otto"
 	"regexp"
 	"strings"
@@ -76,7 +77,7 @@ func (s *nntime) Parse(body string) (proxies []*model.HttpProxy, err error) {
 }
 
 func getIp(s string) (ip string, err error) {
-	r := regexp.MustCompile(regIp).FindAllStringSubmatch(s, 1)
+	r := regexp.MustCompile(util.RegIp).FindAllStringSubmatch(s, 1)
 	if r == nil {
 		err = errors.New("no ip found")
 		return

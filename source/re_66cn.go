@@ -2,13 +2,14 @@ package source
 
 import (
 	"github.com/phpgao/proxy_pool/model"
+	"github.com/phpgao/proxy_pool/util"
 	"regexp"
 	"strings"
 )
 
 func (s *cn66) StartUrl() []string {
 	return []string{
-		"http://www.66ip.cn/mo.php?tqsl=1000",
+		"http://www.66ip.cn/mo.php?tqsl=2000",
 	}
 }
 
@@ -33,13 +34,12 @@ func (s *cn66) Run() {
 }
 
 func (s *cn66) Parse(body string) (proxies []*model.HttpProxy, err error) {
-	reg := regexp.MustCompile(regProxy)
+	reg := regexp.MustCompile(util.RegProxy)
 	rs := reg.FindAllString(body, -1)
 
 	for _, proxy := range rs {
 		if strings.Contains(proxy, ":") {
 			proxyInfo := strings.Split(proxy, ":")
-
 			proxies = append(proxies, &model.HttpProxy{
 				Ip:   proxyInfo[0],
 				Port: proxyInfo[1],

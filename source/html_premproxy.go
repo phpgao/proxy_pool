@@ -15,6 +15,7 @@ import (
 func (s *premProxy) StartUrl() []string {
 	return []string{
 		"https://premproxy.com/list/time-01.htm",
+		"https://premproxy.com/list/type-01.htm",
 	}
 }
 

@@ -6,7 +6,7 @@ import (
 
 var (
 	Db     *City
-	logger = util.GetLogger()
+	logger = util.GetLogger("ipdb")
 )
 
 func init() {

@@ -22,7 +22,7 @@ import (
 
 var (
 	config = util.ServerConf
-	logger = util.GetLogger()
+	logger = util.GetLogger("model")
 )
 
 const ConnectCommand = "%s %s %s\r\nHost: %s\r\nProxy-Connection: Keep-Alive\r\n\r\n"
@@ -61,7 +61,7 @@ func Make(m map[string]string) (newProxy HttpProxy, err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Println("Recovered in f", r)
+			logger.WithField("fatal", r).Warn("Recovered")
 		}
 	}()
 
@@ -100,18 +100,18 @@ func (p *HttpProxy) IsHttps() bool {
 	return p.Schema == "https"
 }
 
-func (p *HttpProxy) SimpleTcpTest(timeOut time.Duration) bool {
-	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%s", p.Ip, p.Port), timeOut)
+func (p *HttpProxy) SimpleTcpTest(timeOut time.Duration) (err error) {
+	var conn net.Conn
+	conn, err = net.DialTimeout("tcp", fmt.Sprintf("%s:%s", p.Ip, p.Port), timeOut)
+	if err != nil {
+		return
+	}
 	defer func() {
 		if conn != nil {
 			_ = conn.Close()
 		}
 	}()
-	if err != nil {
-		return false
-	} else {
-		return true
-	}
+	return
 }
 
 func (p *HttpProxy) GetHttpTransport() (t *http.Transport, err error) {

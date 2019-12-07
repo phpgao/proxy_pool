@@ -6,6 +6,7 @@ import (
 	"github.com/phpgao/proxy_pool/model"
 	"math/rand"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -13,6 +14,7 @@ type redisDB struct {
 	PrefixKey string
 	client    *redis.Client
 	KeyExpire int
+	lock      sync.RWMutex
 }
 
 func (r *redisDB) Test() bool {
@@ -89,9 +91,13 @@ func (r *redisDB) UpdateSchema(proxy model.HttpProxy) (err error) {
 }
 
 func (r *redisDB) Expire(key string, expiration time.Duration) error {
+	r.lock.Lock()
+	defer r.lock.Unlock()
 	return r.client.Expire(key, expiration).Err()
 }
 func (r *redisDB) SetScore(key string, score int) error {
+	r.lock.Lock()
+	defer r.lock.Unlock()
 	return r.client.HSet(key, "Score", score).Err()
 }
 func (r *redisDB) GetScore(key string) int {
@@ -148,6 +154,8 @@ func (r *redisDB) Exists(proxy model.HttpProxy) bool {
 }
 
 func (r *redisDB) GetAll() (proxies []model.HttpProxy) {
+	r.lock.RLock()
+	defer r.lock.RUnlock()
 	keyPattern := strings.Join([]string{
 		r.PrefixKey,
 		"list",
@@ -159,7 +167,8 @@ func (r *redisDB) GetAll() (proxies []model.HttpProxy) {
 		//logger.WithField("proxy", proxy).Info("get all proxy")
 		newProxy, err := model.Make(proxy)
 		if err != nil {
-			logger.WithError(err).Error("error create proxy from map")
+			logger.WithField("key", key).WithError(err).Error("error create proxy from map")
+			r.client.Del(key)
 			continue
 		}
 		proxies = append(proxies, newProxy)
@@ -195,19 +204,41 @@ func Match(filters []func(model.HttpProxy) bool, p model.HttpProxy) bool {
 	return true
 }
 
-func (r *redisDB) Remove(proxy model.HttpProxy) (rs bool, err error) {
+func (r *redisDB) Remove(proxy model.HttpProxy) (err error) {
+	r.lock.Lock()
+	defer r.lock.Unlock()
 	key := r.GetListKey(proxy)
 	if r.KeyExists(key) {
 		err = r.client.Del(key).Err()
 		if err != nil {
 			logger.WithError(err).WithField("key", key).Error("error deleting key")
-			return false, err
+			return err
 		}
 	}
-	return true, nil
+	return nil
+}
+
+func (r *redisDB) RemoveAll(proxies []model.HttpProxy) (err error) {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+
+	pipe := r.client.Pipeline()
+	for _, proxy := range proxies {
+		key := r.GetListKey(proxy)
+		if r.KeyExists(key) {
+			pipe.Del(key)
+		}
+	}
+	_, err = pipe.Exec()
+	if err != nil {
+		return
+	}
+	return
 }
 
 func (r *redisDB) Random() (p model.HttpProxy, err error) {
+	r.lock.RLock()
+	defer r.lock.RUnlock()
 	keyPattern := strings.Join([]string{
 		r.PrefixKey,
 		"list",
@@ -227,19 +258,19 @@ func (r *redisDB) Random() (p model.HttpProxy, err error) {
 	//logger.WithField("proxy", proxy).Info("get all proxy")
 	newProxy, err := model.Make(proxy)
 	if err != nil {
-		logger.WithError(err).Error("error create proxy from map")
 		return
 	}
 	return newProxy, nil
 }
 
 func (r *redisDB) Len() int {
+	r.lock.RLock()
+	defer r.lock.RUnlock()
 	keyPattern := strings.Join([]string{
 		r.PrefixKey,
 		"list",
 		"*",
 	}, ":")
-	logger.WithField("keyPattern", keyPattern).Debug("redis cmd keys")
 	keys, _ := r.client.Keys(keyPattern).Result()
 	return len(keys)
 }

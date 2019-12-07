@@ -37,11 +37,14 @@ type Config struct {
 	UlimitCur           int    `default:"65535"`      //ulimit
 	UlimitMax           int    `default:"65535"`      //ulimit
 	ScoreAtLeast        int    `default:"60"`         //随机选择的最小分数
+	MaxProxy            int    `default:"2000"`       //最大代理个数
 }
 
 func init() {
 	var m *multiconfig.DefaultLoader
 	for _, file := range []string{"config.yml", "config.yaml", "config.json", "config.toml"} {
+
+		print(file)
 		if fileExists(file) {
 			m = multiconfig.NewWithPath(file)
 			break
@@ -66,6 +69,7 @@ func fileExists(filename string) bool {
 func (c Config) GetInternalCron() string {
 	return fmt.Sprintf("@every %ds", c.CheckInterval)
 }
+
 func (c Config) GetTcpTestTimeOut() time.Duration {
 	return time.Duration(c.TcpTestTimeOut) * time.Second
 }

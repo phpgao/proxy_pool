@@ -14,7 +14,7 @@ var (
 	Http   pool.Pool
 	Https  pool.Pool
 	config = util.ServerConf
-	logger = util.GetLogger()
+	logger = util.GetLogger("ppool")
 )
 
 func init() {

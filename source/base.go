@@ -8,15 +8,14 @@ import (
 	"github.com/phpgao/proxy_pool/db"
 	"github.com/phpgao/proxy_pool/model"
 	"github.com/phpgao/proxy_pool/util"
+	"github.com/phpgao/proxy_pool/validator"
 	"math/rand"
 	"strings"
 	"time"
 )
 
 var (
-	logger   = util.GetLogger()
-	regIp    = `(?:(?:[0,1]?\d?\d|2[0-4]\d|25[0-5])\.){3}(?:[0,1]?\d?\d|2[0-4]\d|25[0-5])`
-	regProxy = `(?:(?:[0,1]?\d?\d|2[0-4]\d|25[0-5])\.){3}(?:[0,1]?\d?\d|2[0-4]\d|25[0-5]):\d{0,5}`
+	logger = util.GetLogger("source")
 )
 
 func init() {
@@ -86,7 +85,10 @@ func (s *Spider) RandomDelay() bool {
 }
 
 func (s *Spider) Fetch(proxyURL string, proxy *model.HttpProxy) (body string, err error) {
-
+	if !validator.CanDo() {
+		logger.Debug("max ranched, pass")
+		return
+	}
 	if s.RandomDelay() {
 		time.Sleep(time.Duration(rand.Intn(6)) * time.Second)
 	}
@@ -121,11 +123,11 @@ func getProxy(s Crawler) {
 	for _, url := range s.StartUrl() {
 		go func(proxyURL string, inputChan chan<- *model.HttpProxy) {
 			logger.Debugf("Requesting %s", proxyURL)
-			defer func() {
-				if r := recover(); r != nil {
-					fmt.Println("Recovered in f", r)
-				}
-			}()
+			//defer func() {
+			//	if r := recover(); r != nil {
+			//		logger.WithField("fatal", r).Warn("Recovered")
+			//	}
+			//}()
 			var proxyText string
 			var newProxies []*model.HttpProxy
 			var err error

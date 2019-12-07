@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	logger = util.GetLogger()
+	logger = util.GetLogger("ulimit")
 )
 
 func Set() {

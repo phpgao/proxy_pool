@@ -1,15 +1,16 @@
 package validator
 
 import (
-	"github.com/apex/log"
 	"github.com/phpgao/proxy_pool/model"
 	"github.com/phpgao/proxy_pool/queue"
+	"github.com/phpgao/proxy_pool/util"
 	"sync"
 )
 
 func OldValidator() {
 	q := queue.GetOldChan()
 	var wg sync.WaitGroup
+	logger := util.GetLogger("validator_old")
 
 	for i := 0; i < config.OldQueue; i++ {
 		wg.Add(1)
@@ -52,10 +53,10 @@ func OldValidator() {
 								}
 							}
 						}
-						logger.WithFields(log.Fields{
-							"score": score,
-							"proxy": p.GetProxyWithSchema(),
-						}).Debug("set score")
+						//logger.WithFields(log.Fields{
+						//	"score": score,
+						//	"proxy": p.GetProxyWithSchema(),
+						//}).Debug("set score")
 
 						err = storeEngine.AddScore(p, score)
 						if err != nil {

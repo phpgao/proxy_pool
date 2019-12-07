@@ -9,7 +9,7 @@ import (
 
 var (
 	config = util.ServerConf
-	logger = util.GetLogger()
+	logger = util.GetLogger("db")
 	db     Store
 )
 
@@ -20,7 +20,8 @@ type Store interface {
 	Exists(model.HttpProxy) bool
 	Add(model.HttpProxy) bool
 	UpdateSchema(model.HttpProxy) error
-	Remove(model.HttpProxy) (bool, error)
+	Remove(model.HttpProxy) error
+	RemoveAll([]model.HttpProxy) error
 	Random() (model.HttpProxy, error)
 	Len() int
 	Test() bool

@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"fmt"
 	"github.com/phpgao/proxy_pool/db"
 	"github.com/phpgao/proxy_pool/model"
 	"sync"
@@ -41,7 +40,6 @@ func (c *Cached) Get() []model.HttpProxy {
 }
 
 func (c *Cached) Update() {
-	fmt.Println("expired")
 	c.m.Lock()
 	defer c.m.Unlock()
 	c.proxy = engine.GetAll()

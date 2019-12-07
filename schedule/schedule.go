@@ -5,6 +5,7 @@ import (
 	"github.com/phpgao/proxy_pool/queue"
 	"github.com/phpgao/proxy_pool/source"
 	"github.com/phpgao/proxy_pool/util"
+	"github.com/phpgao/proxy_pool/validator"
 	"github.com/robfig/cron/v3"
 )
 
@@ -16,7 +17,7 @@ type Scheduler struct {
 
 var (
 	config = util.ServerConf
-	logger = util.GetLogger()
+	logger = util.GetLogger("schedule")
 )
 
 func (s *Scheduler) Run() {
@@ -35,6 +36,7 @@ func (s *Scheduler) Run() {
 	_, _ = s.cron.AddFunc("@every 1m", func() {
 		s.report("")
 	})
+	_, _ = s.cron.AddFunc("@every 1m", validator.Update)
 	s.cron.Start()
 }
 

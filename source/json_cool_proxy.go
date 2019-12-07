@@ -36,7 +36,7 @@ func (s *coolProxy) Name() string {
 }
 
 func (s *coolProxy) TimeOut() int {
-	return 30
+	return 60
 }
 
 type coolProxyJson struct {
