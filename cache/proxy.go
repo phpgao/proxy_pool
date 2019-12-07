@@ -80,7 +80,7 @@ func (c *Cached) Get() map[string][]model.HttpProxy {
 }
 
 func (c *Cached) Update() {
-	logger.Debug("updating cache")
+	logger.Info("updating cache")
 	c.proxy = getProxyMap()
 	c.expire = time.Now().Add(cacheTimeout * time.Second)
 }

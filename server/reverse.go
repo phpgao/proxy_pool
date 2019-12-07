@@ -34,10 +34,9 @@ func handleTunneling(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 
 	} else {
-
 		l := len(proxies)
 		proxy := proxies[rand.Intn(l)]
-
+		logger.WithField("proxy", proxy.GetProxyWithSchema()).Debug("dynamic https")
 		msg := fmt.Sprintf(model.ConnectCommand, http.MethodConnect, r.Host, "HTTP/1.1", r.Host)
 
 		destConn, err = net.DialTimeout("tcp", proxy.GetProxyUrl(), timeOut)
@@ -91,6 +90,7 @@ func handleHTTP(w http.ResponseWriter, req *http.Request) {
 		Transport = http.DefaultTransport
 	} else {
 		proxy := proxies[rand.Intn(len(proxies))]
+		logger.WithField("proxy", proxy.GetProxyWithSchema()).Debug("dynamic http")
 		Transport = &http.Transport{
 			Proxy: http.ProxyURL(&url.URL{
 				Host: proxy.GetProxyUrl()},

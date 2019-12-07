@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	logger         = util.GetLogger("server")
+	logger         = util.GetLogger("reverse")
 	storeEngine    = db.GetDb()
 	IdleConnClosed = make(chan struct{})
 	Srv            *http.Server
