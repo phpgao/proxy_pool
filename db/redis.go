@@ -35,7 +35,7 @@ func (r *redisDB) Init() error {
 	return nil
 }
 
-func (r *redisDB) GetListKey(proxy model.HttpProxy) string {
+func (r *redisDB) GetProxyKey(proxy model.HttpProxy) string {
 	return strings.Join([]string{
 		r.PrefixKey,
 		"list",
@@ -50,7 +50,7 @@ func (r *redisDB) Add(proxy model.HttpProxy) bool {
 		proxy.GetKey(),
 	}, ":")
 	if !r.KeyExists(key) {
-		err := r.client.HMSet(key, proxy.GetProxyHash()).Err()
+		err := r.client.HMSet(key, proxy.GetProxyMap()).Err()
 		if err != nil {
 			logger.WithError(err).Error("error add proxy")
 			return false
@@ -63,7 +63,7 @@ func (r *redisDB) Add(proxy model.HttpProxy) bool {
 		}
 	}
 	// add ttl
-	err := r.ExpireDefault(key)
+	err := r.ExpireDefault(proxy)
 	if err != nil {
 		logger.WithError(err).Error("error setting expire")
 		return false
@@ -95,12 +95,14 @@ func (r *redisDB) Expire(key string, expiration time.Duration) error {
 	defer r.lock.Unlock()
 	return r.client.Expire(key, expiration).Err()
 }
-func (r *redisDB) SetScore(key string, score int) error {
+func (r *redisDB) SetScore(p model.HttpProxy) error {
+	key := r.GetProxyKey(p)
 	r.lock.Lock()
 	defer r.lock.Unlock()
-	return r.client.HSet(key, "Score", score).Err()
+	return r.client.HSet(key, "Score", p.Score).Err()
 }
-func (r *redisDB) GetScore(key string) int {
+func (r *redisDB) GetScore(p model.HttpProxy) int {
+	key := r.GetProxyKey(p)
 	v, err := r.client.HGet(key, "Score").Int()
 	if err != nil {
 		logger.WithField("key", key).WithError(err).Error("error get score")
@@ -109,7 +111,8 @@ func (r *redisDB) GetScore(key string) int {
 	return v
 }
 
-func (r *redisDB) ExpireDefault(key string) error {
+func (r *redisDB) ExpireDefault(p model.HttpProxy) error {
+	key := r.GetProxyKey(p)
 	if r.KeyExpire <= 0 {
 		return nil
 	}
@@ -117,13 +120,12 @@ func (r *redisDB) ExpireDefault(key string) error {
 }
 
 func (r *redisDB) AddScore(p model.HttpProxy, score int) (err error) {
-	key := r.GetListKey(p)
 
-	v := r.GetScore(key)
+	v := r.GetScore(p)
 	rs := v + score
 
 	if rs <= 0 {
-		err = r.client.Del(key).Err()
+		err = r.Remove(p)
 		if err != nil {
 			return
 		}
@@ -131,13 +133,15 @@ func (r *redisDB) AddScore(p model.HttpProxy, score int) (err error) {
 	}
 	if rs >= 100 {
 		rs = 100
-		err = r.ExpireDefault(key)
+		err = r.ExpireDefault(p)
 		if err != nil {
 			return
 		}
 	}
 
-	return r.SetScore(key, rs)
+	p.Score = rs
+
+	return r.SetScore(p)
 }
 
 func (r *redisDB) KeyExists(key string) bool {
@@ -149,7 +153,7 @@ func (r *redisDB) KeyExists(key string) bool {
 }
 
 func (r *redisDB) Exists(proxy model.HttpProxy) bool {
-	key := r.GetListKey(proxy)
+	key := r.GetProxyKey(proxy)
 	return r.KeyExists(key)
 }
 
@@ -207,7 +211,7 @@ func Match(filters []func(model.HttpProxy) bool, p model.HttpProxy) bool {
 func (r *redisDB) Remove(proxy model.HttpProxy) (err error) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
-	key := r.GetListKey(proxy)
+	key := r.GetProxyKey(proxy)
 	if r.KeyExists(key) {
 		err = r.client.Del(key).Err()
 		if err != nil {
@@ -224,7 +228,7 @@ func (r *redisDB) RemoveAll(proxies []model.HttpProxy) (err error) {
 
 	pipe := r.client.Pipeline()
 	for _, proxy := range proxies {
-		key := r.GetListKey(proxy)
+		key := r.GetProxyKey(proxy)
 		if r.KeyExists(key) {
 			pipe.Del(key)
 		}

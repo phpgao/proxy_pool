@@ -85,7 +85,7 @@ func (p *HttpProxy) GetProxyWithSchema() string {
 	return fmt.Sprintf("%s://%s:%s", p.Schema, p.Ip, p.Port)
 }
 
-func (p *HttpProxy) GetProxyHash() map[string]interface{} {
+func (p *HttpProxy) GetProxyMap() map[string]interface{} {
 	return structs.Map(p)
 }
 

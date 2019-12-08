@@ -45,7 +45,7 @@ func getProxyMap() map[string][]model.HttpProxy {
 		"https": nil,
 	}
 	var err error
-	for k, _ := range m {
+	for k := range m {
 		var p []model.HttpProxy
 
 		if k == "http" {
@@ -69,14 +69,14 @@ func getProxyMap() map[string][]model.HttpProxy {
 	return m
 }
 
-func (c *Cached) Get() map[string][]model.HttpProxy {
+func (c *Cached) Get() *map[string][]model.HttpProxy {
 	c.m.RLock()
 	defer c.m.RUnlock()
 	now := time.Now()
 	if now.Sub(c.expire) >= 0 {
 		once.Do(c.Update)
 	}
-	return Cache.proxy
+	return &Cache.proxy
 }
 
 func (c *Cached) Update() {

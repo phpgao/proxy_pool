@@ -21,8 +21,8 @@ var (
 
 func handleTunneling(w http.ResponseWriter, r *http.Request) {
 	var err error
-	proxies := cache.Cache.Get()["https"]
-
+	p := *cache.Cache.Get()
+	proxies := p["https"]
 	var destConn net.Conn
 	if proxies == nil {
 		logger.Debug("serve as a https proxy")
@@ -76,15 +76,22 @@ func handleTunneling(w http.ResponseWriter, r *http.Request) {
 	go transfer(clientConn, destConn)
 }
 func transfer(destination io.WriteCloser, source io.ReadCloser) {
-	defer destination.Close()
-	defer source.Close()
+
+	defer func() {
+		err := destination.Close()
+		if err != nil {
+			logger.WithError(err).Warn("error close remote conn")
+		}
+		source.Close()
+	}()
 	io.Copy(destination, source)
 }
 func handleHTTP(w http.ResponseWriter, req *http.Request) {
 	var err error
 	var Transport http.RoundTripper
 
-	proxies := cache.Cache.Get()["http"]
+	p := *cache.Cache.Get()
+	proxies := p["http"]
 	if proxies == nil {
 		logger.Debug("serve as a http proxy")
 		Transport = http.DefaultTransport
