@@ -154,6 +154,7 @@ func logging(hdlr http.Handler) http.Handler {
 		defer func(start time.Time) {
 			logger.WithFields(log.Fields{
 				"Method":     req.Method,
+				"Host":       req.Host,
 				"Path":       req.URL.Path,
 				"RemoteAddr": req.RemoteAddr,
 				"UserAgent":  req.UserAgent(),
