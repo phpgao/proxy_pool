@@ -1,6 +1,6 @@
 export PATH := $(GOPATH)/bin:$(PATH)
 
-LDFLAGS := -s -w -X main.VERSION=$(VERSION) -X 'main.BUILD_TIME=`date`' -X 'main.GO_VERSION=`go version`'
+LDFLAGS := -s -w -X main.VERSION=$(VERSION) -X 'main.BuildTime=`date`' -X 'main.GoVersion=`go version`'
 
 all: build
 
