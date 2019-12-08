@@ -2,15 +2,16 @@ package schedule
 
 import (
 	"github.com/phpgao/proxy_pool/db"
+	"github.com/phpgao/proxy_pool/job"
 	"github.com/phpgao/proxy_pool/queue"
-	"github.com/phpgao/proxy_pool/source"
 	"github.com/phpgao/proxy_pool/util"
 	"github.com/phpgao/proxy_pool/validator"
 	"github.com/robfig/cron/v3"
+	"time"
 )
 
 type Scheduler struct {
-	spiders []source.Crawler
+	spiders []job.Crawler
 	cronMap map[string]cron.EntryID
 	cron    *cron.Cron
 }
@@ -42,18 +43,22 @@ func (s *Scheduler) Run() {
 
 func (s *Scheduler) report(spiderKey string) {
 	if spiderKey != "" {
-		entryId := s.cronMap[spiderKey]
-		if ok := s.cron.Entry(entryId).Next.IsZero(); ok {
-			logger.Infof("Spider %s hasn't run yet!", spiderKey)
-		} else {
-			logger.Infof("Next tick of %s --> %s", spiderKey, s.cron.Entry(entryId).Next.Format("2006-01-02 15:04:05"))
+		if entryId, ok := s.cronMap[spiderKey]; ok {
+			if ok := s.cron.Entry(entryId).Next.IsZero(); ok {
+				logger.Infof("Spider %s hasn't run yet!", spiderKey)
+			} else {
+				logger.Infof("Next tick of %s --> %s", spiderKey, s.cron.Entry(entryId).Next.Format("2006-01-02 15:04:05"))
+			}
 		}
 	} else {
 		for spiderKey, entryId := range s.cronMap {
 			if ok := s.cron.Entry(entryId).Next.IsZero(); ok {
 				logger.Infof("Spider %s hasn't run yet!", spiderKey)
 			} else {
-				logger.Infof("Next tick of %s --> %s", spiderKey, s.cron.Entry(entryId).Next.Format("2006-01-02 15:04:05"))
+				t := s.cron.Entry(entryId).Next
+				if t.Sub(time.Now()) <= 2*time.Minute {
+					logger.Infof("Next tick of %s --> %s", spiderKey, s.cron.Entry(entryId).Next.Format("2006-01-02 15:04:05"))
+				}
 			}
 		}
 	}
@@ -66,7 +71,7 @@ func NewScheduler() *Scheduler {
 		cronMap: make(map[string]cron.EntryID),
 	}
 
-	s.spiders = source.GetSpiders(queue.GetNewChan())
+	s.spiders = job.GetSpiders(queue.GetNewChan())
 
 	internalJob := Internal{
 		channel: queue.OldProxyChan,

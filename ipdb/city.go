@@ -30,7 +30,7 @@ type CityInfo struct {
 	Anycast        string `json:"anycast"`
 }
 
-// City struct 
+// City struct
 type City struct {
 	reader *reader
 }

@@ -39,6 +39,8 @@ type Config struct {
 	ScoreAtLeast        int    `default:"60"`         //随机选择的最小分数
 	MaxProxy            int    `default:"2000"`       //最大代理个数
 	ProxyCacheTimeOut   int    `default:"60"`         //代理缓存失效时间
+	EnableApi           bool   `default:"true"`       //启动API服务
+	EnableProxy         bool   `default:"true"`       //启动动态代理服务
 }
 
 func init() {
