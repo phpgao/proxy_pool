@@ -3,6 +3,7 @@ package server
 import (
 	"crypto/tls"
 	"fmt"
+	"github.com/apex/log"
 	"github.com/phpgao/proxy_pool/cache"
 	"github.com/phpgao/proxy_pool/model"
 	"github.com/phpgao/proxy_pool/util"
@@ -24,6 +25,7 @@ func handleTunneling(w http.ResponseWriter, r *http.Request) {
 	p := *cache.Cache.Get()
 	proxies := p["https"]
 	var destConn net.Conn
+
 	if proxies == nil {
 		logger.Debug("serve as a https proxy")
 		destConn, err = net.DialTimeout("tcp", r.Host, timeOut)
@@ -135,23 +137,40 @@ func copyHeader(dst, src http.Header) {
 	}
 }
 
-func ServeReverse() {
-	addr := fmt.Sprintf("%s:%d", util.ServerConf.ProxyBind, util.ServerConf.ProxyPort)
-	Server = &http.Server{
-		Addr: addr,
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.Method == http.MethodConnect {
-				handleTunneling(w, r)
-			} else {
-				handleHTTP(w, r)
-			}
-		}),
-		// Disable HTTP/2.
-		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
-	}
-	logger.WithField("addr", addr).Info("dynamic proxy listen and serve")
+// https://gist.github.com/creack/4c00ee404f2d7bd5983382cc93af5147
+type middleware func(http.Handler) http.Handler
+type middlewares []middleware
 
-	if err := Server.ListenAndServe(); err != http.ErrServerClosed {
-		logger.Fatalf("HTTP server ListenAndServe: %v", err)
+func (mws middlewares) apply(hdlr http.Handler) http.Handler {
+	if len(mws) == 0 {
+		return hdlr
 	}
+
+	return mws[1:].apply(mws[0](hdlr))
+}
+
+func logging(hdlr http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		defer func(start time.Time) {
+			logger.WithFields(log.Fields{
+				"Method":     req.Method,
+				"Path":       req.URL.Path,
+				"RemoteAddr": req.RemoteAddr,
+				"UserAgent":  req.UserAgent(),
+				"time":       time.Since(start),
+			}).Info("")
+		}(time.Now())
+		hdlr.ServeHTTP(w, req)
+	})
+}
+
+func routerProxy() http.Handler {
+	router := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodConnect {
+			handleTunneling(w, r)
+		} else {
+			handleHTTP(w, r)
+		}
+	})
+	return (middlewares{logging}).apply(router)
 }

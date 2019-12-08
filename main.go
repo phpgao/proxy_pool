@@ -18,8 +18,12 @@ var (
 )
 
 func main() {
+	// print welcome msg
 	ShowWelcome()
+
+	//wash cache
 	validator.Update()
+
 	if util.ServerConf.Manager {
 		logger.Info("Running in as Manager")
 		scheduler := schedule.NewScheduler()
@@ -31,8 +35,7 @@ func main() {
 		go validator.OldValidator()
 	}
 
-	go server.ServeReverse()
-	server.Serve()
+	server.RunService()
 }
 
 func ShowWelcome() {
