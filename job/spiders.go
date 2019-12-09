@@ -5,7 +5,7 @@ import (
 )
 
 var ListOfSpider = []Crawler{
-	//&IpHai{},
+	&IpHai{},
 	&rudnkh{},
 	&coolProxy{},
 	&xici{},
