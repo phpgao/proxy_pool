@@ -123,11 +123,11 @@ func getProxy(s Crawler) {
 	for _, url := range s.StartUrl() {
 		go func(proxyURL string, inputChan chan<- *model.HttpProxy) {
 			logger.Debugf("Requesting %s", proxyURL)
-			//defer func() {
-			//	if r := recover(); r != nil {
-			//		logger.WithField("fatal", r).Warn("Recovered")
-			//	}
-			//}()
+			defer func() {
+				if r := recover(); r != nil {
+					logger.WithField("fatal", r).Warn("Recovered")
+				}
+			}()
 			var proxyText string
 			var newProxies []*model.HttpProxy
 			var err error
