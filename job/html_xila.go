@@ -6,43 +6,50 @@ import (
 	"strings"
 )
 
-type cz struct {
+type xiladaili struct {
 	Spider
 }
 
-func (s *cz) StartUrl() []string {
+func (s *xiladaili) StartUrl() []string {
 	return []string{
 		"http://www.xiladaili.com/gaoni/",
+		"http://www.xiladaili.com/gaoni/2/",
+		"http://www.xiladaili.com/gaoni/3/",
 		"http://www.xiladaili.com/http/",
+		"http://www.xiladaili.com/http/2/",
+		"http://www.xiladaili.com/http/3/",
 		"http://www.xiladaili.com/https/",
+		"http://www.xiladaili.com/https/2/",
+		"http://www.xiladaili.com/https/3/",
 		"http://www.xiladaili.com/putong/",
-		"http://www.xiladaili.com/https/15/",
+		"http://www.xiladaili.com/putong/2/",
+		"http://www.xiladaili.com/putong/3/",
 	}
 }
 
-func (s *cz) Cron() string {
-	return "@every 30m"
+func (s *xiladaili) Cron() string {
+	return "@every 2m"
 }
 
-func (s *cz) GetReferer() string {
-	return "http://free-proxy.cz/zh/proxylist/country/CN/all/ping/all"
+func (s *xiladaili) GetReferer() string {
+	return "http://www.xiladaili.com/"
 }
 
-func (s *cz) Run() {
+func (s *xiladaili) Run() {
 	getProxy(s)
 }
 
-func (s *cz) Name() string {
-	return "cz"
+func (s *xiladaili) Name() string {
+	return "xiladaili"
 }
 
-func (s *cz) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s *xiladaili) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return
 	}
 
-	list := htmlquery.Find(doc, "//*[@id='list']/table/tbody/tr[position()>1]")
+	list := htmlquery.Find(doc, "//table/tbody/tr[position()>1]")
 	for _, n := range list {
 		ip := htmlquery.InnerText(htmlquery.FindOne(n, "//td[1]"))
 		port := htmlquery.InnerText(htmlquery.FindOne(n, "//td[2]"))

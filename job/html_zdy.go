@@ -12,16 +12,19 @@ type zdy struct {
 
 func (s *zdy) StartUrl() []string {
 	return []string{
-		"https://www.zdaye.com/dayProxy/ip/317476.html",
+		"https://www.zdaye.com/FreeIPList.html",
 	}
 }
 
+func (s *zdy) Enabled() bool {
+	return true
+}
 func (s *zdy) Cron() string {
-	return "@every 30m"
+	return "@every 5m"
 }
 
 func (s *zdy) GetReferer() string {
-	return "http://free-proxy.zdy/zh/proxylist/country/CN/all/ping/all"
+	return "https://www.zdaye.com"
 }
 
 func (s *zdy) Run() {
@@ -38,18 +41,19 @@ func (s *zdy) Parse(body string) (proxies []*model.HttpProxy, err error) {
 		return
 	}
 
-	list := htmlquery.Find(doc, "//*[@id='list']/table/tbody/tr[position()>1]")
+	list := htmlquery.Find(doc, "//table/tbody/tr[position()>1]")
 	for _, n := range list {
 		ip := htmlquery.InnerText(htmlquery.FindOne(n, "//td[1]"))
-		port := htmlquery.InnerText(htmlquery.FindOne(n, "//td[2]"))
-
 		ip = strings.TrimSpace(ip)
-		port = strings.TrimSpace(port)
+		for _, p := range []string{
+			"80", "8080", "8008", "8888", "9999", "1080", "3000",
+		} {
+			proxies = append(proxies, &model.HttpProxy{
+				Ip:   ip,
+				Port: p,
+			})
+		}
 
-		proxies = append(proxies, &model.HttpProxy{
-			Ip:   ip,
-			Port: port,
-		})
 	}
 	return
 }

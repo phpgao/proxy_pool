@@ -20,6 +20,7 @@ type Config struct {
 	NewQueue            int    `default:"200"`        //验证新代理队列
 	OldQueue            int    `default:"300"`        //验证旧代理队列
 	Debug               bool   `default:"false"`      //调试模式
+	DumpHttp            bool   `default:"false"`      //调试http
 	CheckInterval       int    `default:"60"`         //检查代理间隔
 	Expire              int    `default:"0"`          //redis key默认超时
 	Score               int    `default:"60"`         //新代理默认分数

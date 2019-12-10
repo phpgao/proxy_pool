@@ -40,7 +40,7 @@ func (s *IpHai) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	if err != nil {
 		return
 	}
-	list := htmlquery.Find(doc, "/html/body/div[2]/div[2]/table/tbody/tr[position()>1]")
+	list := htmlquery.Find(doc, "//table/tbody/tr[position()>1]")
 
 	for _, n := range list {
 		ip := htmlquery.InnerText(htmlquery.FindOne(n, "//td[1]"))

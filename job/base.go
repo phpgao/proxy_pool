@@ -1,9 +1,11 @@
 package job
 
 import (
+	"errors"
 	"fmt"
 	"github.com/antchfx/htmlquery"
 	"github.com/apex/log"
+	"github.com/avast/retry-go"
 	"github.com/parnurzeal/gorequest"
 	"github.com/phpgao/proxy_pool/db"
 	"github.com/phpgao/proxy_pool/model"
@@ -15,7 +17,9 @@ import (
 )
 
 var (
-	logger = util.GetLogger("source")
+	logger             = util.GetLogger("source")
+	MaxProxyReachedErr = errors.New("max proxy reached")
+	storeEngine        = db.GetDb()
 )
 
 func init() {
@@ -27,7 +31,10 @@ type Crawler interface {
 	StartUrl() []string
 	Cron() string
 	Name() string
-	Fetch(string, *model.HttpProxy) (string, error)
+	Retry() uint
+	Enabled() bool
+	// url , if use proxy
+	Fetch(string, bool) (string, error)
 	SetProxyChan(chan<- *model.HttpProxy)
 	GetProxyChan() chan<- *model.HttpProxy
 	Parse(string) ([]*model.HttpProxy, error)
@@ -56,6 +63,11 @@ func (s *Spider) errAndStatus(errs []error, resp gorequest.Response) (err error)
 func (s *Spider) Cron() string {
 	panic("implement me")
 }
+
+func (s *Spider) Enabled() bool {
+	return true
+}
+
 func (s *Spider) TimeOut() int {
 	return util.ServerConf.Timeout
 }
@@ -84,11 +96,12 @@ func (s *Spider) RandomDelay() bool {
 	return true
 }
 
-func (s *Spider) Fetch(proxyURL string, proxy *model.HttpProxy) (body string, err error) {
-	if !validator.CanDo() {
-		logger.Debug("max ranched, pass")
-		return
-	}
+func (s *Spider) Retry() uint {
+	return 4
+}
+
+func (s *Spider) Fetch(proxyURL string, useProxy bool) (body string, err error) {
+
 	if s.RandomDelay() {
 		time.Sleep(time.Duration(rand.Intn(6)) * time.Second)
 	}
@@ -103,11 +116,19 @@ func (s *Spider) Fetch(proxyURL string, proxy *model.HttpProxy) (body string, er
 		Set("Content-Type", contentType).
 		Set("Referer", s.GetReferer()).
 		Set("Pragma", `no-cache`).
-		Timeout(time.Duration(s.TimeOut()) * time.Second)
-	if proxy == nil {
-		resp, body, errs = superAgent.End()
+		Timeout(time.Duration(s.TimeOut()) * time.Second).SetDebug(util.ServerConf.DumpHttp)
+
+	if useProxy {
+		var proxy model.HttpProxy
+		proxy, err = storeEngine.Random()
+		if err != nil {
+			return
+		}
+		p := fmt.Sprintf("http://%s:%s", proxy.Ip, proxy.Port)
+		logger.WithField("proxy", p).Debug("with proxy")
+		resp, body, errs = superAgent.Proxy(p).End()
 	} else {
-		resp, body, errs = superAgent.Proxy(fmt.Sprintf("http://%s:%s", proxy.Ip, proxy.Port)).End()
+		resp, body, errs = superAgent.End()
 	}
 	if err = s.errAndStatus(errs, resp); err != nil {
 		return
@@ -119,124 +140,101 @@ func (s *Spider) Fetch(proxyURL string, proxy *model.HttpProxy) (body string, er
 
 func getProxy(s Crawler) {
 	logger.WithField("spider", s.Name()).Debug("spider begin")
-
+	if !s.Enabled() {
+		logger.WithField("spider", s.Name()).Debug("spider is not enabled")
+	}
 	for _, url := range s.StartUrl() {
-		go func(proxyURL string, inputChan chan<- *model.HttpProxy) {
-			logger.Debugf("Requesting %s", proxyURL)
+		go func(proxySiteURL string, inputChan chan<- *model.HttpProxy) {
 			defer func() {
 				if r := recover(); r != nil {
 					logger.WithField("fatal", r).Warn("Recovered")
 				}
 			}()
-			var proxyText string
+
 			var newProxies []*model.HttpProxy
-			var err error
-			fetchFlag := false
-			parseFlag := false
-			// first try direct
-			logger.WithFields(log.Fields{"url": proxyURL}).Debug("try fetching url directly")
-			proxyText, err = s.Fetch(proxyURL, nil)
+
+			var attempts = 0
+			err := retry.Do(
+				func() error {
+					defer func() {
+						if r := recover(); r != nil {
+							logger.WithField("fatal", r).Warn("Recovered")
+						}
+					}()
+
+					attempts++
+					logger.WithField("attempts", attempts).Debug(proxySiteURL)
+
+					var err error
+					if !validator.CanDo() {
+						return MaxProxyReachedErr
+					}
+
+					var withProxy bool
+
+					if attempts > 1 {
+						withProxy = true
+					}
+
+					resp, err := s.Fetch(proxySiteURL, withProxy)
+					if err != nil {
+						return err
+					}
+
+					if resp == "" {
+						return errors.New("empty resp")
+					}
+
+					newProxies, err = s.Parse(resp)
+					if err != nil {
+						return err
+					}
+
+					if newProxies == nil {
+						return errors.New("empty proxy")
+					}
+
+					return nil
+				},
+				retry.Attempts(s.Retry()),
+				retry.RetryIf(func(err error) bool {
+					// should give up
+					if err.Error() == MaxProxyReachedErr.Error() || err.Error() == "empty proxy" {
+						return false
+					}
+
+					return true
+				}),
+			)
+
 			if err != nil {
-				logger.WithFields(log.Fields{"url": proxyURL}).WithError(err).Debug("failed fetching url directly")
-			} else {
-				fetchFlag = true
-			}
-			if proxyText != "" {
-				newProxies, err = s.Parse(proxyText)
-				if err != nil {
-					logger.WithFields(log.Fields{"url": proxyURL}).WithError(err).Debug("failed parse content by directly")
-				}
-				if len(newProxies) > 0 {
-					parseFlag = true
-				}
+				logger.WithError(err).WithField("url", proxySiteURL).Error("error get new proxy")
 			}
 
-			if !parseFlag || !fetchFlag {
-				storeEngine := db.GetDb()
-				//if exists proxies,use random max 3 times
-				if storeEngine.Len() > 0 {
-					logger.WithFields(log.Fields{
-						"url": proxyURL,
-					}).Debug("try fetching url with proxy")
-					for i := 1; i <= util.ServerConf.Retry; i++ {
-						fetchFlag = false
-						parseFlag = false
-						randomProxy, err := storeEngine.Random()
-						if err != nil {
-							logger.WithFields(log.Fields{
-								"url":  proxyURL,
-								"time": i,
-							}).WithError(err).Error("failed get random proxy")
-							continue
-						}
-						logger.WithFields(log.Fields{
-							"url":   proxyURL,
-							"time":  i,
-							"proxy": fmt.Sprintf("%s:%s", randomProxy.Ip, randomProxy.Port),
-						}).Debug("try fetching url with proxy")
+			logger.WithFields(log.Fields{
+				"name":  s.Name(),
+				"url":   proxySiteURL,
+				"count": len(newProxies),
+			}).Info("url proxy done report")
 
-						proxyText, err = s.Fetch(proxyURL, &randomProxy)
-						if err != nil {
-							logger.WithFields(log.Fields{
-								"url":      proxyURL,
-								"try_time": i,
-								"proxy":    fmt.Sprintf("%s:%s", randomProxy.Ip, randomProxy.Port),
-							}).WithError(err).Debug("failed fetching url with proxy")
-							continue
-						}
-						fetchFlag = true
-						if proxyText != "" {
-							newProxies, err = s.Parse(proxyText)
-							if err != nil {
-								logger.WithFields(log.Fields{
-									"url": proxyURL,
-								}).WithError(err).Error("failed parse content by proxy")
-							}
-							if len(newProxies) > 0 {
-								logger.WithFields(log.Fields{
-									"url":   proxyURL,
-									"time":  i,
-									"proxy": fmt.Sprintf("%s:%s", randomProxy.Ip, randomProxy.Port),
-								}).Debug("success fetching url with proxy")
-								parseFlag = true
-								break
-							}
-						}
-
-					}
-				} else {
-					logger.WithFields(log.Fields{
-						"url": proxyURL,
-					}).Debug("no proxy available,pass")
-				}
-			}
-
-			// if empty content or failed
-			// user proxy at most 3 times
 			var tmpMap = map[string]int{}
-			if parseFlag && fetchFlag {
-				logger.WithField("spider", s.Name()).WithField("count", len(newProxies)).Debug("count proxy")
-				for _, newProxy := range newProxies {
-					newProxy.Ip = strings.TrimSpace(newProxy.Ip)
-					newProxy.Port = strings.TrimSpace(newProxy.Port)
-					if _, found := tmpMap[newProxy.GetKey()]; found {
-						continue
-					}
-					tmpMap[newProxy.GetKey()] = 1
-					newProxy.From = s.Name()
-					if newProxy.Score == 0 {
-						newProxy.Score = util.ServerConf.Score
-					}
-					if model.FilterProxy(newProxy) {
-						inputChan <- newProxy
-					}
-				}
-			} else {
-				logger.WithField("spider", s.Name()).WithField("count", len(newProxies)).Info("zero proxy")
-			}
 
+			for _, newProxy := range newProxies {
+				newProxy.Ip = strings.TrimSpace(newProxy.Ip)
+				newProxy.Port = strings.TrimSpace(newProxy.Port)
+				if _, found := tmpMap[newProxy.GetKey()]; found {
+					continue
+				}
+				tmpMap[newProxy.GetKey()] = 1
+				newProxy.From = s.Name()
+				if newProxy.Score == 0 {
+					newProxy.Score = util.ServerConf.Score
+				}
+				if model.FilterProxy(newProxy) {
+					inputChan <- newProxy
+				}
+			}
 		}(url, s.GetProxyChan())
 	}
 
-	logger.WithField("spider", s.Name()).Debug("send jobs done")
 }

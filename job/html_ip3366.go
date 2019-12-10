@@ -13,8 +13,12 @@ type ip3366 struct {
 func (s *ip3366) StartUrl() []string {
 	return []string{
 		"http://www.ip3366.net/free/?stype=1",
+		"http://www.ip3366.net/free/?stype=1&page=2",
 		"http://www.ip3366.net/free/?stype=2",
-		"http://proxy.ip3366.net/",
+		"http://www.ip3366.net/free/?stype=2&page=2",
+		"http://proxy.ip3366.net/free/?action=china&page=1",
+		"http://proxy.ip3366.net/free/?action=china&page=2",
+		"http://proxy.ip3366.net/free/?action=china&page=3",
 	}
 }
 
@@ -40,7 +44,7 @@ func (s *ip3366) Parse(body string) (proxies []*model.HttpProxy, err error) {
 		return
 	}
 
-	list := htmlquery.Find(doc, "//*[@id='list']/table/tbody/tr[position()>1]")
+	list := htmlquery.Find(doc, "//table/tbody/tr[position()>1]")
 	for _, n := range list {
 		ip := htmlquery.InnerText(htmlquery.FindOne(n, "//td[1]"))
 		port := htmlquery.InnerText(htmlquery.FindOne(n, "//td[2]"))

@@ -21,7 +21,7 @@ func (s *pubProxy) GetReferer() string {
 }
 
 func (s *pubProxy) Cron() string {
-	return "@every 2m"
+	return "@every 1m"
 }
 
 func (s *pubProxy) Name() string {
