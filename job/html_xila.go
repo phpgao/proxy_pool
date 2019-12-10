@@ -1,6 +1,7 @@
 package job
 
 import (
+	"fmt"
 	"github.com/antchfx/htmlquery"
 	"github.com/phpgao/proxy_pool/model"
 	"strings"
@@ -11,20 +12,13 @@ type xiladaili struct {
 }
 
 func (s *xiladaili) StartUrl() []string {
-	return []string{
-		"http://www.xiladaili.com/gaoni/",
-		"http://www.xiladaili.com/gaoni/2/",
-		"http://www.xiladaili.com/gaoni/3/",
-		"http://www.xiladaili.com/http/",
-		"http://www.xiladaili.com/http/2/",
-		"http://www.xiladaili.com/http/3/",
-		"http://www.xiladaili.com/https/",
-		"http://www.xiladaili.com/https/2/",
-		"http://www.xiladaili.com/https/3/",
-		"http://www.xiladaili.com/putong/",
-		"http://www.xiladaili.com/putong/2/",
-		"http://www.xiladaili.com/putong/3/",
+	var u []string
+	for _, d := range []string{"gaoni", "http", "https", "putong"} {
+		for i := 1; i < 5; i++ {
+			u = append(u, fmt.Sprintf("http://www.xiladaili.com/%s/%d/", d, i))
+		}
 	}
+	return u
 }
 
 func (s *xiladaili) Cron() string {

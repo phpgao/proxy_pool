@@ -14,12 +14,11 @@ func (s *kuaiProxy) StartUrl() []string {
 	return []string{
 		"https://www.kuaidaili.com/free/intr/",
 		"https://www.kuaidaili.com/free/inha/",
-		"https://www.kuaidaili.com/",
 	}
 }
 
 func (s *kuaiProxy) Cron() string {
-	return "@every 30m"
+	return "@every 5m"
 }
 
 func (s *kuaiProxy) GetReferer() string {

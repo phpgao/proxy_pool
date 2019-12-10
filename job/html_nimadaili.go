@@ -1,6 +1,7 @@
 package job
 
 import (
+	"fmt"
 	"github.com/antchfx/htmlquery"
 	"github.com/phpgao/proxy_pool/model"
 	"strings"
@@ -11,17 +12,21 @@ type nimadaili struct {
 }
 
 func (s *nimadaili) StartUrl() []string {
-	return []string{
-		"http://www.nimadaili.com/putong/",
+	var u []string
+	for _, d := range []string{"gaoni", "http", "https", "putong"} {
+		for i := 1; i < 5; i++ {
+			u = append(u, fmt.Sprintf("http://www.nimadaili.com/%s/%d/", d, i))
+		}
 	}
+	return u
 }
 
 func (s *nimadaili) Cron() string {
-	return "@every 30m"
+	return "@every 2m"
 }
 
 func (s *nimadaili) GetReferer() string {
-	return "http://free-proxy.nimadaili/zh/proxylist/country/CN/all/ping/all"
+	return "http://www.nimadaili.com/"
 }
 
 func (s *nimadaili) Run() {
@@ -38,7 +43,7 @@ func (s *nimadaili) Parse(body string) (proxies []*model.HttpProxy, err error) {
 		return
 	}
 
-	list := htmlquery.Find(doc, "//*[@id='list']/table/tbody/tr[position()>1]")
+	list := htmlquery.Find(doc, "//table/tbody/tr[position()>1]")
 	for _, n := range list {
 		ip := htmlquery.InnerText(htmlquery.FindOne(n, "//td[1]"))
 		port := htmlquery.InnerText(htmlquery.FindOne(n, "//td[2]"))
