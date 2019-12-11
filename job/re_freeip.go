@@ -11,7 +11,7 @@ import (
 func (s *freeip) StartUrl() []string {
 	var u []string
 	for i := 1; i < 20; i++ {
-		u = append(u, fmt.Sprintf("https://www.freeip.top/?page=%d",i))
+		u = append(u, fmt.Sprintf("https://www.freeip.top/?page=%d", i))
 	}
 	return u
 }

@@ -97,7 +97,7 @@ func (s *Spider) RandomDelay() bool {
 }
 
 func (s *Spider) Retry() uint {
-	return 4
+	return uint(util.ServerConf.MaxRetry)
 }
 
 func (s *Spider) Fetch(proxyURL string, useProxy bool) (body string, err error) {
