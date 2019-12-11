@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/koding/multiconfig"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -19,7 +20,7 @@ type Config struct {
 	PrefixKey           string `default:"proxy_pool"` //默认前缀
 	NewQueue            int    `default:"200"`        //验证新代理队列
 	OldQueue            int    `default:"300"`        //验证旧代理队列
-	Debug               bool   `default:"false"`      //调试模式
+	Debug               bool   `default:"true"`       //调试模式
 	DumpHttp            bool   `default:"false"`      //调试http
 	CheckInterval       int    `default:"60"`         //检查代理间隔
 	Expire              int    `default:"0"`          //redis key默认超时
@@ -43,6 +44,7 @@ type Config struct {
 	ProxyCacheTimeOut   int    `default:"60"`         //代理缓存失效时间
 	EnableApi           bool   `default:"true"`       //启动API服务
 	EnableProxy         bool   `default:"true"`       //启动动态代理服务
+	ChromeWS            string `default:""`           //chrome's rdp ws url
 }
 
 func init() {
@@ -77,4 +79,12 @@ func (c Config) GetInternalCron() string {
 
 func (c Config) GetTcpTestTimeOut() time.Duration {
 	return time.Duration(c.TcpTestTimeOut) * time.Second
+}
+
+func (c Config) GetChromeAddr() string {
+	if strings.HasPrefix(c.ChromeWS, "http") {
+		return c.ChromeWS
+	}
+
+	return fmt.Sprintf("http://%s/json", c.ChromeWS)
 }

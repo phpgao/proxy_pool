@@ -8,6 +8,8 @@ require (
 	github.com/antchfx/xpath v1.0.0 // indirect
 	github.com/apex/log v1.1.1
 	github.com/avast/retry-go v2.4.3+incompatible
+	github.com/chromedp/cdproto v0.0.0-20191114225735-6626966fbae4
+	github.com/chromedp/chromedp v0.5.2
 	github.com/corpix/uarand v0.1.0
 	github.com/elazarl/goproxy v0.0.0-20190711103511-473e67f1d7d2 // indirect
 	github.com/elazarl/goproxy/ext v0.0.0-20190711103511-473e67f1d7d2 // indirect

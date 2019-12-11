@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 
 services:
   proxy_pool:
@@ -12,6 +12,7 @@ services:
       - proxy-pool
     environment:
       CONFIG_HOST: redis
+      CONFIG_CHROMEWS: "chrome:9222"
 
   redis:
     container_name: proxy_redis
@@ -20,6 +21,13 @@ services:
     restart: always
     volumes:
       - "./data:/data"
+    networks:
+      - proxy-pool
+
+  chrome:
+    container_name: proxy_headless_chrome
+    image: chromedp/headless-shell:stable
+    restart: always
     networks:
       - proxy-pool
 

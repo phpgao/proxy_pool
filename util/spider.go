@@ -1,8 +1,11 @@
 package util
 
 import (
+	"encoding/json"
 	"github.com/corpix/uarand"
+	"github.com/parnurzeal/gorequest"
 	"regexp"
+	"time"
 )
 
 const (
@@ -23,4 +26,29 @@ func FindIp(s string) string {
 	}
 
 	return rs[0]
+}
+
+func GetWsFromChrome(url string) (ws string, err error) {
+	_, jsonBody, errs := gorequest.New().Get(url).Timeout(5 * time.Second).End()
+	if len(errs) > 0 {
+		err = errs[0]
+		panic(err)
+		return
+	}
+	var data []struct {
+		Description          string `json:"description"`
+		DevtoolsFrontendURL  string `json:"devtoolsFrontendUrl"`
+		ID                   string `json:"id"`
+		Title                string `json:"title"`
+		Type                 string `json:"type"`
+		URL                  string `json:"url"`
+		WebSocketDebuggerURL string `json:"webSocketDebuggerUrl"`
+	}
+
+	err = json.Unmarshal([]byte(jsonBody), &data)
+	if err != nil {
+		panic(err)
+	}
+	ws = data[len(data)-1].WebSocketDebuggerURL
+	return
 }
