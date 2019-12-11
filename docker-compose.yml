@@ -20,7 +20,7 @@ services:
     image: redis:5.0-alpine3.10
     restart: always
     volumes:
-      - "./data:/data"
+      - "/tmp/data:/data"
     networks:
       - proxy-pool
 
