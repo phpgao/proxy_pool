@@ -5,7 +5,7 @@ import (
 )
 
 var ListOfSpider = []Crawler{
-	//&IpHai{},
+	&IpHai{},
 	&rudnkh{},
 	&coolProxy{},
 	&xici{},
@@ -22,12 +22,12 @@ var ListOfSpider = []Crawler{
 	&httptunnel{},
 	&proxylist{},
 	&proxylistplus{},
-	&aliveproxy{},
+	&aliveProxy{},
 	&proxyDb{},
 	&usProxy{},
 	&siteDigger{},
 	&dogdev{},
-	&newproxy{},
+	&newProxy{},
 	&xseo{},
 	&ultraProxies{},
 	&premProxy{},
@@ -37,6 +37,9 @@ var ListOfSpider = []Crawler{
 	&proxyIpList{},
 	&blackHat{},
 	&proxyLists{},
+	&ip3366{},
+	&xiladaili{},
+	&nimadaili{},
 }
 
 func GetSpiders(ch chan<- *model.HttpProxy) []Crawler {

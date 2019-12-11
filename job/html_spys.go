@@ -3,6 +3,7 @@ package job
 import (
 	"fmt"
 	"github.com/antchfx/htmlquery"
+	"github.com/apex/log"
 	"github.com/parnurzeal/gorequest"
 	"github.com/phpgao/proxy_pool/model"
 	"github.com/phpgao/proxy_pool/util"
@@ -41,7 +42,7 @@ func (s *spys) Run() {
 	getProxy(s)
 }
 
-func (s *spys) Fetch(proxyURL string, proxy *model.HttpProxy) (body string, err error) {
+func (s *spys) Fetch(siteUrl string, useProxy bool) (body string, err error) {
 
 	if s.RandomDelay() {
 		time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
@@ -51,18 +52,28 @@ func (s *spys) Fetch(proxyURL string, proxy *model.HttpProxy) (body string, err 
 	var superAgent *gorequest.SuperAgent
 	var resp gorequest.Response
 	var errs []error
-	superAgent = request.Post(proxyURL).
+	superAgent = request.Post(siteUrl).
 		Set("User-Agent", util.GetRandomUA()).
 		Set("Content-Type", `text/html; charset=utf-8`).
 		Set("Referer", s.GetReferer()).
 		Set("Pragma", `no-cache`).
 		Send("xpp=2&xf1=1&xf2=0&xf4=0&xf5=1").
-		Timeout(time.Duration(s.TimeOut()) * time.Second)
+		Timeout(time.Duration(s.TimeOut()) * time.Second).SetDebug(util.ServerConf.DumpHttp)
 
-	if proxy == nil {
-		resp, body, errs = superAgent.End()
+	if useProxy {
+		var proxy model.HttpProxy
+		proxy, err = storeEngine.Random()
+		if err != nil {
+			return
+		}
+		p := fmt.Sprintf("http://%s:%s", proxy.Ip, proxy.Port)
+		logger.WithFields(log.Fields{
+			"proxy": p,
+			"url":   siteUrl,
+		}).Debug("with proxy")
+		resp, body, errs = superAgent.Proxy(p).End()
 	} else {
-		resp, body, errs = superAgent.Proxy(fmt.Sprintf("http://%s:%s", proxy.Ip, proxy.Port)).End()
+		resp, body, errs = superAgent.End()
 	}
 	if err = s.errAndStatus(errs, resp); err != nil {
 		return
