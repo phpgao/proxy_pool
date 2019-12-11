@@ -3,7 +3,7 @@ version: '3'
 services:
   proxy_pool:
     container_name: proxy_pool
-    image: endoffight/proxy_pool:latest
+    image: endoffight/proxy_pool:0.5.2
     restart: always
     ports:
       - 8088:8088
