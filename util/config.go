@@ -44,7 +44,6 @@ type Config struct {
 	ProxyCacheTimeOut   int    `default:"60"`         //代理缓存失效时间
 	EnableApi           bool   `default:"true"`       //启动API服务
 	EnableProxy         bool   `default:"true"`       //启动动态代理服务
-	EnableDynamic       bool   `default:"false"`      //启动动态加载服务
 	ChromeWS            string `default:""`           //chrome's rdp ws url
 }
 

@@ -60,7 +60,7 @@ func (s *zdy) StartUrl() []string {
 }
 
 func (s *zdy) Enabled() bool {
-	return util.ServerConf.EnableDynamic && util.ServerConf.ChromeWS != ""
+	return util.ServerConf.ChromeWS != ""
 }
 func (s *zdy) Cron() string {
 	return "@every 5m"
