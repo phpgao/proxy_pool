@@ -147,7 +147,10 @@ func getProxy(s Crawler) {
 		go func(proxySiteURL string, inputChan chan<- *model.HttpProxy) {
 			defer func() {
 				if r := recover(); r != nil {
-					logger.WithField("fatal", r).Warn("Recovered")
+					logger.WithFields(log.Fields{
+						"url":   proxySiteURL,
+						"fatal": r,
+					}).Warn("Recovered")
 				}
 			}()
 
@@ -156,12 +159,6 @@ func getProxy(s Crawler) {
 			var attempts = 0
 			err := retry.Do(
 				func() error {
-					defer func() {
-						if r := recover(); r != nil {
-							logger.WithField("fatal", r).Warn("Recovered")
-						}
-					}()
-
 					attempts++
 					logger.WithField("attempts", attempts).Debug(proxySiteURL)
 
@@ -215,7 +212,7 @@ func getProxy(s Crawler) {
 				"name":  s.Name(),
 				"url":   proxySiteURL,
 				"count": len(newProxies),
-			}).Info("url proxy done report")
+			}).Info("url proxy report")
 
 			var tmpMap = map[string]int{}
 

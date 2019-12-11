@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/koding/multiconfig"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -79,12 +78,4 @@ func (c Config) GetInternalCron() string {
 
 func (c Config) GetTcpTestTimeOut() time.Duration {
 	return time.Duration(c.TcpTestTimeOut) * time.Second
-}
-
-func (c Config) GetChromeAddr() string {
-	if strings.HasPrefix(c.ChromeWS, "http") {
-		return c.ChromeWS
-	}
-
-	return fmt.Sprintf("http://%s/json", c.ChromeWS)
 }
