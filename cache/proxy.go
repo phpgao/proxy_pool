@@ -83,6 +83,7 @@ func (c *Cached) Update() {
 	logger.Info("updating cache")
 	c.proxy = getProxyMap()
 	c.expire = time.Now().Add(cacheTimeout * time.Second)
+	logger.Info("updating cache done")
 }
 
 type Once struct {

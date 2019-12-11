@@ -254,6 +254,7 @@ func (r *redisDB) Random() (p model.HttpProxy, err error) {
 		return
 	}
 	if len(keys) == 0 {
+		err = errors.New("no proxy")
 		return
 	}
 	//rand.Seed(time.Now().Unix())

@@ -1,39 +1,42 @@
 package job
 
 import (
+	"fmt"
 	"github.com/phpgao/proxy_pool/model"
 	"github.com/phpgao/proxy_pool/util"
 	"regexp"
 	"strings"
 )
 
-func (s *jiangxianli) StartUrl() []string {
-	return []string{
-		"http://ip.jiangxianli.com/",
+func (s *freeip) StartUrl() []string {
+	var u []string
+	for i := 1; i < 20; i++ {
+		u = append(u, fmt.Sprintf("https://www.freeip.top/?page=%d", i))
 	}
+	return u
 }
 
-func (s *jiangxianli) GetReferer() string {
-	return "http://ip.jiangxianli.com//"
+func (s *freeip) GetReferer() string {
+	return "https://www.freeip.top/"
 }
 
-type jiangxianli struct {
+type freeip struct {
 	Spider
 }
 
-func (s *jiangxianli) Cron() string {
+func (s *freeip) Cron() string {
 	return "@every 2m"
 }
 
-func (s *jiangxianli) Name() string {
-	return "jiangxianli"
+func (s *freeip) Name() string {
+	return "freeip"
 }
 
-func (s *jiangxianli) Run() {
+func (s *freeip) Run() {
 	getProxy(s)
 }
 
-func (s *jiangxianli) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s *freeip) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	reg := regexp.MustCompile(util.RegProxy)
 	rs := reg.FindAllString(body, -1)
 

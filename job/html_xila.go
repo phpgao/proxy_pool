@@ -1,39 +1,43 @@
 package job
 
 import (
+	"fmt"
 	"github.com/antchfx/htmlquery"
 	"github.com/phpgao/proxy_pool/model"
 	"strings"
 )
 
-type kuaiProxy struct {
+type xiladaili struct {
 	Spider
 }
 
-func (s *kuaiProxy) StartUrl() []string {
-	return []string{
-		"https://www.kuaidaili.com/free/intr/",
-		"https://www.kuaidaili.com/free/inha/",
+func (s *xiladaili) StartUrl() []string {
+	var u []string
+	for _, d := range []string{"gaoni", "http", "https", "putong"} {
+		for i := 1; i < 5; i++ {
+			u = append(u, fmt.Sprintf("http://www.xiladaili.com/%s/%d/", d, i))
+		}
 	}
+	return u
 }
 
-func (s *kuaiProxy) Cron() string {
-	return "@every 5m"
+func (s *xiladaili) Cron() string {
+	return "@every 2m"
 }
 
-func (s *kuaiProxy) GetReferer() string {
-	return "https://www.kuaidaili.com/"
+func (s *xiladaili) GetReferer() string {
+	return "http://www.xiladaili.com/"
 }
 
-func (s *kuaiProxy) Run() {
+func (s *xiladaili) Run() {
 	getProxy(s)
 }
 
-func (s *kuaiProxy) Name() string {
-	return "Kuai"
+func (s *xiladaili) Name() string {
+	return "xiladaili"
 }
 
-func (s *kuaiProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s *xiladaili) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return

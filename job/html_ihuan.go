@@ -6,42 +6,41 @@ import (
 	"strings"
 )
 
-type IpHai struct {
+type ihuan struct {
 	Spider
 }
 
-func (s *IpHai) Cron() string {
-	return "@every 2m"
-}
-
-func (s *IpHai) StartUrl() []string {
+func (s *ihuan) StartUrl() []string {
 	return []string{
-		"http://www.iphai.com/free/ng",
-		"http://www.iphai.com/free/np",
-		"http://www.iphai.com/free/wg",
-		"http://www.iphai.com/free/wp",
+		"https://ip.ihuan.me/ti.html",
+		"https://ip.ihuan.me/",
+		"https://ip.ihuan.me/address/5Lit5Zu9.html",
 	}
 }
 
-func (s *IpHai) GetReferer() string {
-	return "http://www.iphai.com/"
+func (s *ihuan) Cron() string {
+	return "@every 30m"
 }
 
-func (s *IpHai) Run() {
+func (s *ihuan) GetReferer() string {
+	return "https://ip.ihuan.me/"
+}
+
+func (s *ihuan) Run() {
 	getProxy(s)
 }
 
-func (s *IpHai) Name() string {
-	return "ipHai"
+func (s *ihuan) Name() string {
+	return "ihuan"
 }
 
-func (s *IpHai) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s *ihuan) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return
 	}
-	list := htmlquery.Find(doc, "//table/tbody/tr[position()>1]")
 
+	list := htmlquery.Find(doc, "//*[@id='list']/table/tbody/tr[position()>1]")
 	for _, n := range list {
 		ip := htmlquery.InnerText(htmlquery.FindOne(n, "//td[1]"))
 		port := htmlquery.InnerText(htmlquery.FindOne(n, "//td[2]"))
@@ -54,6 +53,5 @@ func (s *IpHai) Parse(body string) (proxies []*model.HttpProxy, err error) {
 			Port: port,
 		})
 	}
-
 	return
 }

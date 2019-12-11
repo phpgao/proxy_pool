@@ -10,6 +10,8 @@ import (
 func (s *cn66) StartUrl() []string {
 	return []string{
 		"http://www.66ip.cn/mo.php?tqsl=2000",
+		"http://www.66ip.cn/nmtq.php?getnum=300&isp=0&anonymoustype=0&start=&ports=&export=&ipaddress=&area=0&proxytype=2&api=66ip",
+		"http://www.66ip.cn/mo.php?sxb=&tqsl=300&port=&export=&ktip=&sxa=&submit=%CC%E1++%C8%A1&textarea=",
 	}
 }
 

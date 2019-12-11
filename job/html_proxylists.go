@@ -18,6 +18,8 @@ func (s *proxyLists) StartUrl() []string {
 		"http://www.proxylists.net/cn_1_ext.html",
 		"http://www.proxylists.net/cn_2_ext.html",
 		"http://www.proxylists.net/cn_3_ext.html",
+		"http://www.proxylists.net/cn_4_ext.html",
+		"http://www.proxylists.net/cn_5_ext.html",
 		"http://www.proxylists.net/us_0_ext.html",
 		"http://www.proxylists.net/gb_0_ext.html",
 		"http://www.proxylists.net/ca_0_ext.html",

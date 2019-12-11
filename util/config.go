@@ -20,6 +20,7 @@ type Config struct {
 	NewQueue            int    `default:"200"`        //验证新代理队列
 	OldQueue            int    `default:"300"`        //验证旧代理队列
 	Debug               bool   `default:"false"`      //调试模式
+	DumpHttp            bool   `default:"false"`      //调试http
 	CheckInterval       int    `default:"60"`         //检查代理间隔
 	Expire              int    `default:"0"`          //redis key默认超时
 	Score               int    `default:"60"`         //新代理默认分数
@@ -38,6 +39,7 @@ type Config struct {
 	UlimitMax           int    `default:"65535"`      //ulimit
 	ScoreAtLeast        int    `default:"60"`         //随机选择的最小分数
 	MaxProxy            int    `default:"2000"`       //最大代理个数
+	MaxRetry            int    `default:"3"`          //最大代理个数
 	ProxyCacheTimeOut   int    `default:"60"`         //代理缓存失效时间
 	EnableApi           bool   `default:"true"`       //启动API服务
 	EnableProxy         bool   `default:"true"`       //启动动态代理服务
