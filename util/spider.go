@@ -2,9 +2,12 @@ package util
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/corpix/uarand"
 	"github.com/parnurzeal/gorequest"
+	"net"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -29,7 +32,26 @@ func FindIp(s string) string {
 }
 
 func GetWsFromChrome(url string) (ws string, err error) {
-	_, jsonBody, errs := gorequest.New().Get(url).Timeout(5 * time.Second).End()
+	host, port := Parse(url)
+	//var chromeApi string
+	//if IsIpFormat(host) {
+	//	chromeApi = fmt.Sprintf("http://%s:%s/json", host, port)
+	//} else {
+	//	var addr []net.IP
+	//	addr, err = net.LookupIP(host)
+	//	if err != nil {
+	//		return
+	//	}
+	//	host = addr[0].String()
+	//	chromeApi = fmt.Sprintf("http://%s:%s/json", host, port)
+	//}
+	chromeApi := fmt.Sprintf("http://%s:%s/json", host, port)
+	logger.WithField("chromeApi", chromeApi).Debug("get chromeApi")
+	s := gorequest.New().Get(chromeApi).Timeout(5 * time.Second)
+	s.Header = map[string]string{
+		"host": "localhost",
+	}
+	_, jsonBody, errs := s.End()
 	if len(errs) > 0 {
 		err = errs[0]
 		panic(err)
@@ -49,6 +71,24 @@ func GetWsFromChrome(url string) (ws string, err error) {
 	if err != nil {
 		panic(err)
 	}
-	ws = data[len(data)-1].WebSocketDebuggerURL
+	ws = strings.Replace(data[len(data)-1].WebSocketDebuggerURL, "localhost", host, 1)
 	return
+}
+
+func Parse(url string) (string, string) {
+	if strings.Contains(url, ":") {
+		t := strings.Split(url, ":")
+		return t[0], t[1]
+	}
+
+	return url, "9222"
+}
+
+func IsIpFormat(ip string) bool {
+	address := net.ParseIP(ip)
+	if address == nil {
+		return false
+	}
+
+	return true
 }
