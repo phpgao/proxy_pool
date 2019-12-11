@@ -7,33 +7,37 @@ import (
 	"strings"
 )
 
-func (s *jiangxianli) StartUrl() []string {
+func (s *freeip) StartUrl() []string {
 	return []string{
-		"http://ip.jiangxianli.com/",
+		"https://www.freeip.top/",
+		"https://www.freeip.top/?page=2",
+		"https://www.freeip.top/?page=3",
+		"https://www.freeip.top/?page=4",
+		"https://www.freeip.top/?page=5",
 	}
 }
 
-func (s *jiangxianli) GetReferer() string {
-	return "http://ip.jiangxianli.com//"
+func (s *freeip) GetReferer() string {
+	return "https://www.freeip.top/"
 }
 
-type jiangxianli struct {
+type freeip struct {
 	Spider
 }
 
-func (s *jiangxianli) Cron() string {
+func (s *freeip) Cron() string {
 	return "@every 2m"
 }
 
-func (s *jiangxianli) Name() string {
-	return "jiangxianli"
+func (s *freeip) Name() string {
+	return "freeip"
 }
 
-func (s *jiangxianli) Run() {
+func (s *freeip) Run() {
 	getProxy(s)
 }
 
-func (s *jiangxianli) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s *freeip) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	reg := regexp.MustCompile(util.RegProxy)
 	rs := reg.FindAllString(body, -1)
 
