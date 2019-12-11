@@ -208,7 +208,7 @@ func getProxy(s Crawler) {
 			)
 
 			if err != nil {
-				logger.WithError(err).WithField("url", proxySiteURL).Error("error get new proxy")
+				logger.WithError(err).WithField("url", proxySiteURL).Debug("error get new proxy")
 			}
 
 			logger.WithFields(log.Fields{

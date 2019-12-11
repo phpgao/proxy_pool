@@ -1,6 +1,7 @@
 package job
 
 import (
+	"fmt"
 	"github.com/phpgao/proxy_pool/model"
 	"github.com/phpgao/proxy_pool/util"
 	"regexp"
@@ -8,13 +9,11 @@ import (
 )
 
 func (s *freeip) StartUrl() []string {
-	return []string{
-		"https://www.freeip.top/",
-		"https://www.freeip.top/?page=2",
-		"https://www.freeip.top/?page=3",
-		"https://www.freeip.top/?page=4",
-		"https://www.freeip.top/?page=5",
+	var u []string
+	for i := 1; i < 20; i++ {
+		u = append(u, fmt.Sprintf("https://www.freeip.top/?page=%d",i))
 	}
+	return u
 }
 
 func (s *freeip) GetReferer() string {
