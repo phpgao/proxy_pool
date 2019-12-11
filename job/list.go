@@ -16,7 +16,7 @@ var ListOfSpider = []Crawler{
 	&feiyi{},
 	&ip89{},
 	&goubanjia{},
-	&jiangxianli{},
+	&freeip{},
 	&ab57{},
 	&clarketm{},
 	&httptunnel{},
