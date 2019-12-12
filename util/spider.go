@@ -33,6 +33,11 @@ func FindIp(s string) string {
 
 func GetWsFromChrome(url string) (ws string, err error) {
 	host, port := Parse(url)
+	var chromeApi string
+	// if ip format
+	//if IsIpFormat(host) {
+	//	chromeApi = fmt.Sprintf("http://%s:%s/json", host, port)
+	//}
 	//var chromeApi string
 	//if IsIpFormat(host) {
 	//	chromeApi = fmt.Sprintf("http://%s:%s/json", host, port)
@@ -45,16 +50,19 @@ func GetWsFromChrome(url string) (ws string, err error) {
 	//	host = addr[0].String()
 	//	chromeApi = fmt.Sprintf("http://%s:%s/json", host, port)
 	//}
-	chromeApi := fmt.Sprintf("http://%s:%s/json", host, port)
+	chromeApi = fmt.Sprintf("http://%s:%s/json", host, port)
 	logger.WithField("chromeApi", chromeApi).Debug("get chromeApi")
 	s := gorequest.New().Get(chromeApi).Timeout(5 * time.Second)
-	s.Header = map[string]string{
-		"host": "localhost",
+
+	if !IsIpFormat(host) {
+		s.Header = map[string]string{
+			"Host": "localhost",
+		}
 	}
+
 	_, jsonBody, errs := s.End()
 	if len(errs) > 0 {
 		err = errs[0]
-		panic(err)
 		return
 	}
 	var data []struct {
@@ -69,9 +77,11 @@ func GetWsFromChrome(url string) (ws string, err error) {
 
 	err = json.Unmarshal([]byte(jsonBody), &data)
 	if err != nil {
-		panic(err)
+		return
 	}
-	ws = strings.Replace(data[len(data)-1].WebSocketDebuggerURL, "localhost", host, 1)
+
+	ws = strings.Replace(data[len(data)-1].WebSocketDebuggerURL, "localhost", fmt.Sprintf("%s:%s", host, port), 1)
+
 	return
 }
 

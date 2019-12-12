@@ -22,10 +22,12 @@ func (s *zdy) Fetch(proxyURL string, useProxy bool) (body string, err error) {
 	}
 
 	ws, err := util.GetWsFromChrome(util.ServerConf.ChromeWS)
-	logger.WithField("ws", ws).Debug("get ws addr")
+
 	if err != nil {
 		return
 	}
+
+	logger.WithField("ws", ws).Debug("get ws addr")
 
 	actxt, cancelActxt := chromedp.NewRemoteAllocator(context.Background(), ws)
 	defer cancelActxt()
