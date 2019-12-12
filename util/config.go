@@ -49,10 +49,9 @@ type Config struct {
 func init() {
 	var m *multiconfig.DefaultLoader
 	for _, file := range []string{"config.yml", "config.yaml", "config.json", "config.toml"} {
-
-		print(file)
 		if fileExists(file) {
 			m = multiconfig.NewWithPath(file)
+			fmt.Printf("Loaded file --> %s\n", file)
 			break
 		}
 	}
