@@ -3,7 +3,7 @@ version: '3'
 services:
   proxy_pool:
     container_name: proxy_pool
-    image: endoffight/proxy_pool:0.5.5
+    image: endoffight/proxy_pool:0.6.0
     restart: always
     ports:
       - 8088:8088
@@ -12,7 +12,7 @@ services:
       - proxy-pool
     environment:
       CONFIG_HOST: redis
-      CONFIG_CHROMEWS: "chrome:9222"
+      CONFIG_CHROMEWS: chrome
 
   redis:
     container_name: proxy_redis
@@ -25,7 +25,7 @@ services:
       - proxy-pool
 
   chrome:
-    container_name: proxy_headless_chrome
+    container_name: proxy_chrome
     image: chromedp/headless-shell:stable
     restart: always
     networks:

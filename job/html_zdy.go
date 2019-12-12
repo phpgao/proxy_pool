@@ -92,7 +92,7 @@ func (s *zdy) Parse(body string) (proxies []*model.HttpProxy, err error) {
 		ip := htmlquery.InnerText(htmlquery.FindOne(n, "//td[1]"))
 		ip = strings.TrimSpace(ip)
 		for _, p := range []string{
-			"80", "8080", "8008", "8811", "8888", "9999", "1080", "3000",
+			"80", "82", "8080", "8008", "8811", "8888", "9999", "1080", "3000", "5555", "3128",
 		} {
 			proxies = append(proxies, &model.HttpProxy{
 				Ip:   ip,
