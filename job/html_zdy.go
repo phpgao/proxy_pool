@@ -2,7 +2,6 @@ package job
 
 import (
 	"context"
-	"fmt"
 	"github.com/antchfx/htmlquery"
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
@@ -21,11 +20,14 @@ func (s *zdy) Fetch(proxyURL string, useProxy bool) (body string, err error) {
 	if s.RandomDelay() {
 		time.Sleep(time.Duration(rand.Intn(6)) * time.Second)
 	}
-	ws, err := util.GetWsFromChrome(fmt.Sprintf("http://%s/json", util.ServerConf.ChromeWS))
-	logger.WithField("ws", ws).Debug("get ws addr")
+
+	ws, err := util.GetWsFromChrome(util.ServerConf.ChromeWS)
+
 	if err != nil {
 		return
 	}
+
+	logger.WithField("ws", ws).Debug("get ws addr")
 
 	actxt, cancelActxt := chromedp.NewRemoteAllocator(context.Background(), ws)
 	defer cancelActxt()

@@ -18,7 +18,7 @@ func TestGetSpiders(t *testing.T) {
 	//for _, c := range ListOfSpider {
 	//	testSpiderFetch(c)
 	//}
-	testSpider := &proxyLists{}
+	testSpider := &zdy{}
 	testSpiderFetch(testSpider)
 }
 
@@ -26,7 +26,7 @@ func testSpiderFetch(c Crawler) {
 	newProxyChan := make(chan *model.HttpProxy, 100)
 	c.SetProxyChan(newProxyChan)
 	c.Run()
-	timeout := time.After(30 * time.Second)
+	timeout := time.After(60 * time.Second)
 	for {
 		select {
 		case proxy := <-newProxyChan:
