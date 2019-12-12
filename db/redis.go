@@ -191,15 +191,16 @@ func (r *redisDB) Get(options map[string]string) (proxies []model.HttpProxy, err
 		if err != nil {
 			return
 		}
-
-		if limit == 0 {
-			limit = util.ServerConf.Limit
-		}
 	}
-	
+
+	if limit == 0 {
+		limit = util.ServerConf.Limit
+	}
+
 	if err != nil {
 		return
 	}
+
 	if len(filters) > 0 {
 		for _, p := range all {
 			if Match(filters, p) {
