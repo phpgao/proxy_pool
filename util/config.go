@@ -25,6 +25,7 @@ type Config struct {
 	Expire              int    `default:"0"`          //redis key默认超时
 	Score               int    `default:"60"`         //新代理默认分数
 	Retry               int    `default:"3"`          //获取代理重试次数
+	Limit               int    `default:"1000"`       //get接口默认返回limit
 	Timeout             int    `default:"10"`         //爬虫默认超时
 	TcpTimeout          int    `default:"4"`          //tcp池的默认超时时间
 	TcpTestTimeOut      int    `default:"4"`          //tcp测试的超时时间
