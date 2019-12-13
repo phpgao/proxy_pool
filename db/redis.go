@@ -4,7 +4,9 @@ import (
 	"errors"
 	"github.com/go-redis/redis/v7"
 	"github.com/phpgao/proxy_pool/model"
+	"github.com/phpgao/proxy_pool/util"
 	"math/rand"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -183,17 +185,38 @@ func (r *redisDB) GetAll() (proxies []model.HttpProxy) {
 func (r *redisDB) Get(options map[string]string) (proxies []model.HttpProxy, err error) {
 	all := r.GetAll()
 	filters, err := model.GetNewFilter(options)
+	var limit int
+	if l, ok := options["limit"]; ok {
+		limit, err = strconv.Atoi(l)
+		if err != nil {
+			return
+		}
+	}
+
+	if limit == 0 {
+		limit = util.ServerConf.Limit
+	}
+
 	if err != nil {
 		return
 	}
+
 	if len(filters) > 0 {
 		for _, p := range all {
 			if Match(filters, p) {
 				proxies = append(proxies, p)
 			}
+			if len(proxies) > limit {
+				return
+			}
 		}
 	} else {
-		proxies = all
+		if len(all) <= limit {
+			proxies = all
+		} else {
+			proxies = all[:limit]
+		}
+
 	}
 	return
 }

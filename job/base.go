@@ -32,6 +32,7 @@ type Crawler interface {
 	Cron() string
 	Name() string
 	Retry() uint
+	NeedRetry() bool
 	Enabled() bool
 	// url , if use proxy
 	Fetch(string, bool) (string, error)
@@ -65,6 +66,10 @@ func (s *Spider) Cron() string {
 }
 
 func (s *Spider) Enabled() bool {
+	return true
+}
+
+func (s *Spider) NeedRetry() bool {
 	return true
 }
 
@@ -200,7 +205,7 @@ func getProxy(s Crawler) {
 						return false
 					}
 
-					return true
+					return s.NeedRetry()
 				}),
 			)
 

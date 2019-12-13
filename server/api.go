@@ -173,6 +173,7 @@ func Filter(c *gin.Context) (proxies []model.HttpProxy, err error) {
 	score := c.Query("score")
 	_source := c.Query("source")
 	country := c.Query("country")
+	limit := c.DefaultQuery("limit", "0")
 
 	return storeEngine.Get(map[string]string{
 		"schema":  schema,
@@ -180,6 +181,7 @@ func Filter(c *gin.Context) (proxies []model.HttpProxy, err error) {
 		"score":   score,
 		"source":  _source,
 		"country": country,
+		"limit":   limit,
 	})
 }
 

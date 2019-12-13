@@ -34,7 +34,7 @@ var countryList = []string{
 func (s *ip89) StartUrl() []string {
 	var t []string
 	for _, c := range countryList {
-		t = append(t, fmt.Sprintf("http://www.89ip.cn/tqdl.html?api=1&num=100&port=&address%s&isp=", url.QueryEscape(c)))
+		t = append(t, fmt.Sprintf("http://www.89ip.cn/tqdl.html?api=1&num=300&port=&address%s&isp=", url.QueryEscape(c)))
 	}
 	return t
 }
@@ -48,7 +48,7 @@ type ip89 struct {
 }
 
 func (s *ip89) Cron() string {
-	return "@every 5m"
+	return "@every 1m"
 }
 
 func (s *ip89) Name() string {
