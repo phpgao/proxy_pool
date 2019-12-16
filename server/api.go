@@ -79,6 +79,7 @@ func routerApi() http.Handler {
 	e.GET("/", handlerStatus)
 	e.GET("/get", handlerQuery)
 	e.GET("/random", handlerRandom)
+	e.GET("/random_text", handlerRandomText)
 
 	return e
 }
@@ -148,17 +149,35 @@ func handlerRandom(c *gin.Context) {
 	proxies, err := Filter(c)
 	if err != nil {
 		resp.Error = err.Error()
-	} else {
-		if len(proxies) > 0 {
-			resp.Data = proxies[rand.Intn(len(proxies))]
-			resp.Total = len(proxies)
-		} else {
-			resp.Data = nil
-			resp.Total = 0
-		}
+		c.JSON(http.StatusOK, resp)
+		return
 	}
 
+	if len(proxies) == 0 {
+		resp.Error = "no proxy"
+		c.JSON(http.StatusOK, resp)
+		return
+
+	}
+	resp.Data = proxies[rand.Intn(len(proxies))]
+	resp.Total = len(proxies)
+
 	c.JSON(http.StatusOK, resp)
+}
+
+func handlerRandomText(c *gin.Context) {
+	proxies, err := Filter(c)
+	if err != nil {
+		c.String(http.StatusOK, "")
+		return
+	}
+
+	if len(proxies) == 0 {
+		c.String(http.StatusOK, "")
+		return
+	}
+
+	c.String(http.StatusOK, proxies[rand.Intn(len(proxies))].GetProxyUrl())
 }
 
 func Filter(c *gin.Context) (proxies []model.HttpProxy, err error) {
