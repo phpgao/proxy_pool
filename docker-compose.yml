@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 
 services:
   proxy_pool:
@@ -28,6 +28,7 @@ services:
 
   chrome:
     container_name: proxy_chrome
+    init: true
     image: chromedp/headless-shell:stable
     restart: always
     networks:
