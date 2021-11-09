@@ -6,11 +6,18 @@ import (
 	"strings"
 )
 
+func init() {
+	spider := ip3366{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
 type ip3366 struct {
 	Spider
 }
 
-func (s *ip3366) StartUrl() []string {
+func (s ip3366) StartUrl() []string {
 	return []string{
 		"http://www.ip3366.net/free/?stype=1",
 		"http://www.ip3366.net/free/?stype=1&page=2",
@@ -22,23 +29,23 @@ func (s *ip3366) StartUrl() []string {
 	}
 }
 
-func (s *ip3366) Cron() string {
+func (s ip3366) Cron() string {
 	return "@every 30m"
 }
 
-func (s *ip3366) GetReferer() string {
+func (s ip3366) GetReferer() string {
 	return "http://www.ip3366.net"
 }
 
-func (s *ip3366) Run() {
+func (s ip3366) Run() {
 	getProxy(s)
 }
 
-func (s *ip3366) Name() string {
+func (s ip3366) Name() string {
 	return "Kuai"
 }
 
-func (s *ip3366) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s ip3366) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return

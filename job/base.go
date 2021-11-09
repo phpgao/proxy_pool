@@ -20,10 +20,22 @@ var (
 	logger             = util.GetLogger("source")
 	MaxProxyReachedErr = errors.New("max proxy reached")
 	storeEngine        = db.GetDb()
+	ListOfSpider       []Crawler
 )
 
 func init() {
 	htmlquery.DisableSelectorCache = true
+}
+
+func register(c Crawler) {
+	ListOfSpider = append(ListOfSpider, c)
+}
+
+func GetSpiders(ch chan<- *model.HttpProxy) []Crawler {
+	for _, v := range ListOfSpider {
+		v.SetProxyChan(ch)
+	}
+	return ListOfSpider
 }
 
 type Crawler interface {
@@ -45,11 +57,11 @@ type Spider struct {
 	ch chan<- *model.HttpProxy
 }
 
-func (s *Spider) StartUrl() []string {
+func (s Spider) StartUrl() []string {
 	panic("implement me")
 }
 
-func (s *Spider) errAndStatus(errs []error, resp gorequest.Response) (err error) {
+func (s Spider) errAndStatus(errs []error, resp gorequest.Response) (err error) {
 	if len(errs) > 0 {
 		err = errs[0]
 		return
@@ -61,51 +73,51 @@ func (s *Spider) errAndStatus(errs []error, resp gorequest.Response) (err error)
 	return
 }
 
-func (s *Spider) Cron() string {
+func (s Spider) Cron() string {
 	panic("implement me")
 }
 
-func (s *Spider) Enabled() bool {
+func (s Spider) Enabled() bool {
 	return true
 }
 
-func (s *Spider) NeedRetry() bool {
+func (s Spider) NeedRetry() bool {
 	return true
 }
 
-func (s *Spider) TimeOut() int {
+func (s Spider) TimeOut() int {
 	return util.ServerConf.Timeout
 }
 
-func (s *Spider) Name() string {
+func (s Spider) Name() string {
 	panic("implement me")
 }
 
-func (s *Spider) Parse(string) ([]*model.HttpProxy, error) {
+func (s Spider) Parse(string) ([]*model.HttpProxy, error) {
 	panic("implement me")
 }
 
-func (s *Spider) GetReferer() string {
+func (s Spider) GetReferer() string {
 	return "https://www.baidu.com/"
 }
 
-func (s *Spider) SetProxyChan(ch chan<- *model.HttpProxy) {
+func (s Spider) SetProxyChan(ch chan<- *model.HttpProxy) {
 	s.ch = ch
 }
 
-func (s *Spider) GetProxyChan() chan<- *model.HttpProxy {
+func (s Spider) GetProxyChan() chan<- *model.HttpProxy {
 	return s.ch
 }
 
-func (s *Spider) RandomDelay() bool {
+func (s Spider) RandomDelay() bool {
 	return true
 }
 
-func (s *Spider) Retry() uint {
+func (s Spider) Retry() uint {
 	return uint(util.ServerConf.MaxRetry)
 }
 
-func (s *Spider) Fetch(proxyURL string, useProxy bool) (body string, err error) {
+func (s Spider) Fetch(proxyURL string, useProxy bool) (body string, err error) {
 
 	if s.RandomDelay() {
 		time.Sleep(time.Duration(rand.Intn(6)) * time.Second)

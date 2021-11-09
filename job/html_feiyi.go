@@ -6,13 +6,20 @@ import (
 	"strings"
 )
 
-func (s *feiyi) StartUrl() []string {
+func init() {
+	spider := feiyi{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
+func (s feiyi) StartUrl() []string {
 	return []string{
 		"http://www.feiyiproxy.com/?page_id=1457",
 	}
 }
 
-func (s *feiyi) GetReferer() string {
+func (s feiyi) GetReferer() string {
 	return "http://www.feiyiproxy.com/"
 }
 
@@ -20,19 +27,19 @@ type feiyi struct {
 	Spider
 }
 
-func (s *feiyi) Cron() string {
+func (s feiyi) Cron() string {
 	return "@every 7m"
 }
 
-func (s *feiyi) Name() string {
+func (s feiyi) Name() string {
 	return "feiyi"
 }
 
-func (s *feiyi) Run() {
+func (s feiyi) Run() {
 	getProxy(s)
 }
 
-func (s *feiyi) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s feiyi) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return

@@ -8,11 +8,18 @@ import (
 	"strings"
 )
 
+func init() {
+	spider := proxyLists{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
 type proxyLists struct {
 	Spider
 }
 
-func (s *proxyLists) StartUrl() []string {
+func (s proxyLists) StartUrl() []string {
 	return []string{
 		"http://www.proxylists.net/cn_0_ext.html",
 		"http://www.proxylists.net/cn_1_ext.html",
@@ -27,23 +34,23 @@ func (s *proxyLists) StartUrl() []string {
 	}
 }
 
-func (s *proxyLists) Cron() string {
+func (s proxyLists) Cron() string {
 	return "@every 5m"
 }
 
-func (s *proxyLists) Name() string {
+func (s proxyLists) Name() string {
 	return "proxy_lists"
 }
 
-func (s *proxyLists) GetReferer() string {
+func (s proxyLists) GetReferer() string {
 	return "http://www.proxyLists.com/"
 }
 
-func (s *proxyLists) Run() {
+func (s proxyLists) Run() {
 	getProxy(s)
 }
 
-func (s *proxyLists) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s proxyLists) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return

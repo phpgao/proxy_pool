@@ -6,33 +6,40 @@ import (
 	"strings"
 )
 
+func init() {
+	spider := data5u{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
 type data5u struct {
 	Spider
 }
 
-func (s *data5u) StartUrl() []string {
+func (s data5u) StartUrl() []string {
 	return []string{
 		"http://www.data5u.com/",
 	}
 }
 
-func (s *data5u) Cron() string {
+func (s data5u) Cron() string {
 	return "@every 30m"
 }
 
-func (s *data5u) GetReferer() string {
+func (s data5u) GetReferer() string {
 	return "http://free-proxy.data5u/zh/proxylist/country/CN/all/ping/all"
 }
 
-func (s *data5u) Run() {
+func (s data5u) Run() {
 	getProxy(s)
 }
 
-func (s *data5u) Name() string {
+func (s data5u) Name() string {
 	return "data5u"
 }
 
-func (s *data5u) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s data5u) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return

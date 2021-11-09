@@ -6,34 +6,41 @@ import (
 	"strings"
 )
 
+func init() {
+	spider := kxdaili{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
 type kxdaili struct {
 	Spider
 }
 
-func (s *kxdaili) StartUrl() []string {
+func (s kxdaili) StartUrl() []string {
 	return []string{
 		"http://www.kxdaili.com/dailiip.html",
 		"http://www.kxdaili.com/dailiip/2/1.html",
 	}
 }
 
-func (s *kxdaili) Cron() string {
+func (s kxdaili) Cron() string {
 	return "@every 30m"
 }
 
-func (s *kxdaili) GetReferer() string {
+func (s kxdaili) GetReferer() string {
 	return "http://free-proxy.kxdaili/zh/proxylist/country/CN/all/ping/all"
 }
 
-func (s *kxdaili) Run() {
+func (s kxdaili) Run() {
 	getProxy(s)
 }
 
-func (s *kxdaili) Name() string {
+func (s kxdaili) Name() string {
 	return "kxdaili"
 }
 
-func (s *kxdaili) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s kxdaili) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return

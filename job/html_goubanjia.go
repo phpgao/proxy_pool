@@ -7,13 +7,20 @@ import (
 	"strings"
 )
 
-func (s *goubanjia) StartUrl() []string {
+func init() {
+	spider := goubanjia{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
+func (s goubanjia) StartUrl() []string {
 	return []string{
 		"http://www.goubanjia.com/",
 	}
 }
 
-func (s *goubanjia) GetReferer() string {
+func (s goubanjia) GetReferer() string {
 	return "http://www.goubanjiaproxy.com/"
 }
 
@@ -21,19 +28,19 @@ type goubanjia struct {
 	Spider
 }
 
-func (s *goubanjia) Cron() string {
+func (s goubanjia) Cron() string {
 	return "@every 2m"
 }
 
-func (s *goubanjia) Name() string {
+func (s goubanjia) Name() string {
 	return "goubanjia"
 }
 
-func (s *goubanjia) Run() {
+func (s goubanjia) Run() {
 	getProxy(s)
 }
 
-func (s *goubanjia) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s goubanjia) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return

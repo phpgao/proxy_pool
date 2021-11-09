@@ -6,6 +6,7 @@ import (
 	"github.com/corpix/uarand"
 	"github.com/parnurzeal/gorequest"
 	"net"
+	"net/http"
 	"regexp"
 	"strings"
 	"time"
@@ -55,9 +56,7 @@ func GetWsFromChrome(url string) (ws string, err error) {
 	s := gorequest.New().Get(chromeApi).Timeout(5 * time.Second)
 
 	if !IsIpFormat(host) {
-		s.Header = map[string]string{
-			"Host": "localhost",
-		}
+		s.Header = http.Header{"Host": {"localhost"}}
 	}
 
 	_, jsonBody, errs := s.End()

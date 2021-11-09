@@ -6,33 +6,40 @@ import (
 	"strings"
 )
 
+func init() {
+	spider := proxylistplus{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
 type proxylistplus struct {
 	Spider
 }
 
-func (s *proxylistplus) Cron() string {
+func (s proxylistplus) Cron() string {
 	return "@every 5m"
 }
 
-func (s *proxylistplus) StartUrl() []string {
+func (s proxylistplus) StartUrl() []string {
 	return []string{
 		"https://list.proxylistplus.com/Fresh-HTTP-Proxy-List-1",
 	}
 }
 
-func (s *proxylistplus) GetReferer() string {
+func (s proxylistplus) GetReferer() string {
 	return "https://list.proxylistplus.com/"
 }
 
-func (s *proxylistplus) Run() {
+func (s proxylistplus) Run() {
 	getProxy(s)
 }
 
-func (s *proxylistplus) Name() string {
+func (s proxylistplus) Name() string {
 	return "proxylistplus"
 }
 
-func (s *proxylistplus) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s proxylistplus) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return

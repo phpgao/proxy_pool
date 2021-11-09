@@ -6,34 +6,41 @@ import (
 	"strings"
 )
 
+func init() {
+	spider := xici{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
 type xici struct {
 	Spider
 }
 
-func (s *xici) Cron() string {
+func (s xici) Cron() string {
 	return "@every 2m"
 }
 
-func (s *xici) GetReferer() string {
+func (s xici) GetReferer() string {
 	return "https://www.xicidaili.com/"
 }
 
-func (s *xici) StartUrl() []string {
+func (s xici) StartUrl() []string {
 	return []string{
 		"http://www.xicidaili.com/nn",
 		"http://www.xicidaili.com/wn",
 	}
 }
 
-func (s *xici) Run() {
+func (s xici) Run() {
 	getProxy(s)
 }
 
-func (s *xici) Name() string {
+func (s xici) Name() string {
 	return "xici"
 }
 
-func (s *xici) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s xici) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return

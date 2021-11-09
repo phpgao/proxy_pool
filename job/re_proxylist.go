@@ -7,13 +7,20 @@ import (
 	"strings"
 )
 
-func (s *proxylist) StartUrl() []string {
+func init() {
+	spider := proxylist{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
+func (s proxylist) StartUrl() []string {
 	return []string{
 		"http://proxy-list.org/english/index.php",
 	}
 }
 
-func (s *proxylist) GetReferer() string {
+func (s proxylist) GetReferer() string {
 	return "http://proxy-list.org"
 }
 
@@ -21,19 +28,19 @@ type proxylist struct {
 	Spider
 }
 
-func (s *proxylist) Cron() string {
+func (s proxylist) Cron() string {
 	return "@every 2m"
 }
 
-func (s *proxylist) Name() string {
+func (s proxylist) Name() string {
 	return "proxylist"
 }
 
-func (s *proxylist) Run() {
+func (s proxylist) Run() {
 	getProxy(s)
 }
 
-func (s *proxylist) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s proxylist) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	reg := regexp.MustCompile(`Proxy\('([a-zA-Z0-9/+]*={0,2})'\)`)
 	rs := reg.FindAllStringSubmatch(body, -1)
 	for _, proxy := range rs {

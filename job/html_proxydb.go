@@ -11,33 +11,40 @@ import (
 	"strings"
 )
 
+func init() {
+	spider := proxyDb{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
 type proxyDb struct {
 	Spider
 }
 
-func (s *proxyDb) StartUrl() []string {
+func (s proxyDb) StartUrl() []string {
 	return []string{
 		"http://proxydb.net/?protocol=http&protocol=https&country=",
 	}
 }
 
-func (s *proxyDb) Cron() string {
+func (s proxyDb) Cron() string {
 	return "@every 1h"
 }
 
-func (s *proxyDb) Name() string {
+func (s proxyDb) Name() string {
 	return "proxydb"
 }
 
-func (s *proxyDb) GetReferer() string {
+func (s proxyDb) GetReferer() string {
 	return "http://proxydb.net/"
 }
 
-func (s *proxyDb) Run() {
+func (s proxyDb) Run() {
 	getProxy(s)
 }
 
-func (s *proxyDb) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s proxyDb) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	scriptRe := regexp.MustCompile(`<div style="display:none" data-(\w+)+="(\d+)"></div>`)
 	scriptRs := scriptRe.FindAllStringSubmatch(body, 1)
 	if scriptRs == nil {

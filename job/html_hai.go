@@ -6,15 +6,22 @@ import (
 	"strings"
 )
 
+func init() {
+	spider := IpHai{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
 type IpHai struct {
 	Spider
 }
 
-func (s *IpHai) Cron() string {
+func (s IpHai) Cron() string {
 	return "@every 2m"
 }
 
-func (s *IpHai) StartUrl() []string {
+func (s IpHai) StartUrl() []string {
 	return []string{
 		"http://www.iphai.com/free/ng",
 		"http://www.iphai.com/free/np",
@@ -23,19 +30,19 @@ func (s *IpHai) StartUrl() []string {
 	}
 }
 
-func (s *IpHai) GetReferer() string {
+func (s IpHai) GetReferer() string {
 	return "http://www.iphai.com/"
 }
 
-func (s *IpHai) Run() {
+func (s IpHai) Run() {
 	getProxy(s)
 }
 
-func (s *IpHai) Name() string {
+func (s IpHai) Name() string {
 	return "ipHai"
 }
 
-func (s *IpHai) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s IpHai) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return

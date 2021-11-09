@@ -9,6 +9,13 @@ import (
 	"strings"
 )
 
+func init() {
+	spider := ip89{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
 var countryList = []string{
 	"印度尼西亚",
 	"美国",
@@ -31,7 +38,7 @@ var countryList = []string{
 	"柬埔寨",
 }
 
-func (s *ip89) StartUrl() []string {
+func (s ip89) StartUrl() []string {
 	var t []string
 	for _, c := range countryList {
 		t = append(t, fmt.Sprintf("http://www.89ip.cn/tqdl.html?api=1&num=300&port=&address%s&isp=", url.QueryEscape(c)))
@@ -39,7 +46,7 @@ func (s *ip89) StartUrl() []string {
 	return t
 }
 
-func (s *ip89) GetReferer() string {
+func (s ip89) GetReferer() string {
 	return "http://www.89ip.cn/"
 }
 
@@ -47,19 +54,19 @@ type ip89 struct {
 	Spider
 }
 
-func (s *ip89) Cron() string {
+func (s ip89) Cron() string {
 	return "@every 1m"
 }
 
-func (s *ip89) Name() string {
+func (s ip89) Name() string {
 	return "ip89"
 }
 
-func (s *ip89) Run() {
+func (s ip89) Run() {
 	getProxy(s)
 }
 
-func (s *ip89) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s ip89) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	reg := regexp.MustCompile(util.RegProxy)
 	rs := reg.FindAllString(body, -1)
 

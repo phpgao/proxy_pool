@@ -6,34 +6,41 @@ import (
 	"strings"
 )
 
+func init() {
+	spider := kuaiProxy{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
 type kuaiProxy struct {
 	Spider
 }
 
-func (s *kuaiProxy) StartUrl() []string {
+func (s kuaiProxy) StartUrl() []string {
 	return []string{
 		"https://www.kuaidaili.com/free/intr/",
 		"https://www.kuaidaili.com/free/inha/",
 	}
 }
 
-func (s *kuaiProxy) Cron() string {
+func (s kuaiProxy) Cron() string {
 	return "@every 5m"
 }
 
-func (s *kuaiProxy) GetReferer() string {
+func (s kuaiProxy) GetReferer() string {
 	return "https://www.kuaidaili.com/"
 }
 
-func (s *kuaiProxy) Run() {
+func (s kuaiProxy) Run() {
 	getProxy(s)
 }
 
-func (s *kuaiProxy) Name() string {
+func (s kuaiProxy) Name() string {
 	return "kuai"
 }
 
-func (s *kuaiProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s kuaiProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return

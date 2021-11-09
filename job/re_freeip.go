@@ -8,7 +8,14 @@ import (
 	"strings"
 )
 
-func (s *freeip) StartUrl() []string {
+func init() {
+	spider := freeip{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
+func (s freeip) StartUrl() []string {
 	var u []string
 	for i := 1; i < 20; i++ {
 		u = append(u, fmt.Sprintf("https://www.freeip.top/?page=%d", i))
@@ -16,7 +23,7 @@ func (s *freeip) StartUrl() []string {
 	return u
 }
 
-func (s *freeip) GetReferer() string {
+func (s freeip) GetReferer() string {
 	return "https://www.freeip.top/"
 }
 
@@ -24,19 +31,19 @@ type freeip struct {
 	Spider
 }
 
-func (s *freeip) Cron() string {
+func (s freeip) Cron() string {
 	return "@every 2m"
 }
 
-func (s *freeip) Name() string {
+func (s freeip) Name() string {
 	return "freeip"
 }
 
-func (s *freeip) Run() {
+func (s freeip) Run() {
 	getProxy(s)
 }
 
-func (s *freeip) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s freeip) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	reg := regexp.MustCompile(util.RegProxy)
 	rs := reg.FindAllString(body, -1)
 

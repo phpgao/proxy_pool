@@ -14,11 +14,18 @@ import (
 	"time"
 )
 
+func init() {
+	spider := spys{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
 type spys struct {
 	Spider
 }
 
-func (s *spys) StartUrl() []string {
+func (s spys) StartUrl() []string {
 	return []string{
 		"http://spys.one/en/anonymous-proxy-list/",
 		"http://spys.one/free-proxy-list/CHN/",
@@ -26,23 +33,23 @@ func (s *spys) StartUrl() []string {
 	}
 }
 
-func (s *spys) Cron() string {
+func (s spys) Cron() string {
 	return "@every 5m"
 }
 
-func (s *spys) Name() string {
+func (s spys) Name() string {
 	return "spys"
 }
 
-func (s *spys) GetReferer() string {
+func (s spys) GetReferer() string {
 	return "http://spys.one/en/anonymous-proxy-list/"
 }
 
-func (s *spys) Run() {
+func (s spys) Run() {
 	getProxy(s)
 }
 
-func (s *spys) Fetch(siteUrl string, useProxy bool) (body string, err error) {
+func (s spys) Fetch(siteUrl string, useProxy bool) (body string, err error) {
 
 	if s.RandomDelay() {
 		time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
@@ -83,7 +90,7 @@ func (s *spys) Fetch(siteUrl string, useProxy bool) (body string, err error) {
 	return
 }
 
-func (s *spys) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s spys) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return

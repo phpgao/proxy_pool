@@ -6,33 +6,40 @@ import (
 	"strings"
 )
 
+func init() {
+	spider := gatherproxy{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
 type gatherproxy struct {
 	Spider
 }
 
-func (s *gatherproxy) StartUrl() []string {
+func (s gatherproxy) StartUrl() []string {
 	return []string{
 		"http://www.gatherproxy.com/proxylist/country/?c=China",
 	}
 }
 
-func (s *gatherproxy) Cron() string {
+func (s gatherproxy) Cron() string {
 	return "@every 30m"
 }
 
-func (s *gatherproxy) GetReferer() string {
+func (s gatherproxy) GetReferer() string {
 	return "http://free-proxy.gatherproxy/zh/proxylist/country/CN/all/ping/all"
 }
 
-func (s *gatherproxy) Run() {
+func (s gatherproxy) Run() {
 	getProxy(s)
 }
 
-func (s *gatherproxy) Name() string {
+func (s gatherproxy) Name() string {
 	return "gatherproxy"
 }
 
-func (s *gatherproxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s gatherproxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return

@@ -6,11 +6,18 @@ import (
 	"strings"
 )
 
+func init() {
+	spider := ihuan{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
 type ihuan struct {
 	Spider
 }
 
-func (s *ihuan) StartUrl() []string {
+func (s ihuan) StartUrl() []string {
 	return []string{
 		"https://ip.ihuan.me/ti.html",
 		"https://ip.ihuan.me/",
@@ -18,23 +25,23 @@ func (s *ihuan) StartUrl() []string {
 	}
 }
 
-func (s *ihuan) Cron() string {
+func (s ihuan) Cron() string {
 	return "@every 30m"
 }
 
-func (s *ihuan) GetReferer() string {
+func (s ihuan) GetReferer() string {
 	return "https://ip.ihuan.me/"
 }
 
-func (s *ihuan) Run() {
+func (s ihuan) Run() {
 	getProxy(s)
 }
 
-func (s *ihuan) Name() string {
+func (s ihuan) Name() string {
 	return "ihuan"
 }
 
-func (s *ihuan) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s ihuan) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return

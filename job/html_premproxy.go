@@ -12,14 +12,21 @@ import (
 	"time"
 )
 
-func (s *premProxy) StartUrl() []string {
+func init() {
+	spider := premProxy{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
+func (s premProxy) StartUrl() []string {
 	return []string{
 		"https://premproxy.com/list/time-01.htm",
 		"https://premproxy.com/list/type-01.htm",
 	}
 }
 
-func (s *premProxy) GetReferer() string {
+func (s premProxy) GetReferer() string {
 	return "http://premproxy.com/"
 }
 
@@ -27,19 +34,19 @@ type premProxy struct {
 	Spider
 }
 
-func (s *premProxy) Cron() string {
+func (s premProxy) Cron() string {
 	return "@every 7m"
 }
 
-func (s *premProxy) Name() string {
+func (s premProxy) Name() string {
 	return "premProxy"
 }
 
-func (s *premProxy) Run() {
+func (s premProxy) Run() {
 	getProxy(s)
 }
 
-func (s *premProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s premProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return

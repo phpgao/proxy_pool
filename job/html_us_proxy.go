@@ -6,33 +6,40 @@ import (
 	"strings"
 )
 
+func init() {
+	spider := usProxy{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
 type usProxy struct {
 	Spider
 }
 
-func (s *usProxy) Cron() string {
+func (s usProxy) Cron() string {
 	return "@every 2m"
 }
 
-func (s *usProxy) GetReferer() string {
+func (s usProxy) GetReferer() string {
 	return "https://www.us-proxy.org/"
 }
 
-func (s *usProxy) StartUrl() []string {
+func (s usProxy) StartUrl() []string {
 	return []string{
 		"https://www.us-proxy.org/",
 	}
 }
 
-func (s *usProxy) Run() {
+func (s usProxy) Run() {
 	getProxy(s)
 }
 
-func (s *usProxy) Name() string {
+func (s usProxy) Name() string {
 	return "usProxy"
 }
 
-func (s *usProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s usProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return

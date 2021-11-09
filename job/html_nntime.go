@@ -10,13 +10,20 @@ import (
 	"strings"
 )
 
-func (s *nntime) StartUrl() []string {
+func init() {
+	spider := nntime{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
+func (s nntime) StartUrl() []string {
 	return []string{
 		"http://nntime.com/proxy-updated-01.htm",
 	}
 }
 
-func (s *nntime) GetReferer() string {
+func (s nntime) GetReferer() string {
 	return "http://nntime.com/"
 }
 
@@ -24,19 +31,19 @@ type nntime struct {
 	Spider
 }
 
-func (s *nntime) Cron() string {
+func (s nntime) Cron() string {
 	return "@every 30m"
 }
 
-func (s *nntime) Name() string {
+func (s nntime) Name() string {
 	return "nntime"
 }
 
-func (s *nntime) Run() {
+func (s nntime) Run() {
 	getProxy(s)
 }
 
-func (s *nntime) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s nntime) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return

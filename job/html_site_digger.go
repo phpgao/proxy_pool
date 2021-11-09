@@ -8,33 +8,40 @@ import (
 	"strings"
 )
 
+func init() {
+	spider := siteDigger{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
 type siteDigger struct {
 	Spider
 }
 
-func (s *siteDigger) StartUrl() []string {
+func (s siteDigger) StartUrl() []string {
 	return []string{
 		"http://www.site-digger.com/html/articles/20110516/proxieslist.html",
 	}
 }
 
-func (s *siteDigger) Cron() string {
+func (s siteDigger) Cron() string {
 	return "1 * * * *"
 }
 
-func (s *siteDigger) Name() string {
+func (s siteDigger) Name() string {
 	return "site_digger"
 }
 
-func (s *siteDigger) GetReferer() string {
+func (s siteDigger) GetReferer() string {
 	return "http://www.site-digger.com/"
 }
 
-func (s *siteDigger) Run() {
+func (s siteDigger) Run() {
 	getProxy(s)
 }
 
-func (s *siteDigger) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s siteDigger) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	reg := regexp.MustCompile(`document\.write\((decrypt\("[a-zA-Z0-9/+]*={0,2}"\))\);`)
 	rs := reg.FindAllStringSubmatch(body, -1)
 

@@ -10,33 +10,40 @@ import (
 	"strings"
 )
 
+func init() {
+	spider := ultraProxies{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
 type ultraProxies struct {
 	Spider
 }
 
-func (s *ultraProxies) StartUrl() []string {
+func (s ultraProxies) StartUrl() []string {
 	return []string{
 		"http://www.ultraproxies.com/",
 	}
 }
 
-func (s *ultraProxies) Cron() string {
+func (s ultraProxies) Cron() string {
 	return "@every 1h"
 }
 
-func (s *ultraProxies) Name() string {
+func (s ultraProxies) Name() string {
 	return "ultraProxies"
 }
 
-func (s *ultraProxies) GetReferer() string {
+func (s ultraProxies) GetReferer() string {
 	return "http://www.ultraproxies.com/"
 }
 
-func (s *ultraProxies) Run() {
+func (s ultraProxies) Run() {
 	getProxy(s)
 }
 
-func (s *ultraProxies) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s ultraProxies) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return

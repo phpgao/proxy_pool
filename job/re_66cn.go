@@ -7,7 +7,14 @@ import (
 	"strings"
 )
 
-func (s *cn66) StartUrl() []string {
+func init() {
+	spider := cn66{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
+func (s cn66) StartUrl() []string {
 	return []string{
 		"http://www.66ip.cn/mo.php?tqsl=2000",
 		"http://www.66ip.cn/nmtq.php?getnum=300&isp=0&anonymoustype=0&start=&ports=&export=&ipaddress=&area=0&proxytype=2&api=66ip",
@@ -15,7 +22,7 @@ func (s *cn66) StartUrl() []string {
 	}
 }
 
-func (s *cn66) GetReferer() string {
+func (s cn66) GetReferer() string {
 	return "http://www.66ip.cn/"
 }
 
@@ -23,19 +30,19 @@ type cn66 struct {
 	Spider
 }
 
-func (s *cn66) Cron() string {
+func (s cn66) Cron() string {
 	return "@every 1m"
 }
 
-func (s *cn66) Name() string {
+func (s cn66) Name() string {
 	return "cn66"
 }
 
-func (s *cn66) Run() {
+func (s cn66) Run() {
 	getProxy(s)
 }
 
-func (s *cn66) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s cn66) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	reg := regexp.MustCompile(util.RegProxy)
 	rs := reg.FindAllString(body, -1)
 

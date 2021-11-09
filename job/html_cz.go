@@ -6,11 +6,18 @@ import (
 	"strings"
 )
 
+func init() {
+	spider := cz{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
 type cz struct {
 	Spider
 }
 
-func (s *cz) StartUrl() []string {
+func (s cz) StartUrl() []string {
 	return []string{
 		"http://free-proxy.cz/zh/proxylist/country/CN/all/ping/all",
 		"http://free-proxy.cz/zh/proxylist/country/CN/all/ping/all/2",
@@ -20,23 +27,23 @@ func (s *cz) StartUrl() []string {
 	}
 }
 
-func (s *cz) Cron() string {
+func (s cz) Cron() string {
 	return "@every 30m"
 }
 
-func (s *cz) GetReferer() string {
+func (s cz) GetReferer() string {
 	return "http://free-proxy.cz/zh/proxylist/country/CN/all/ping/all"
 }
 
-func (s *cz) Run() {
+func (s cz) Run() {
 	getProxy(s)
 }
 
-func (s *cz) Name() string {
+func (s cz) Name() string {
 	return "cz"
 }
 
-func (s *cz) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s cz) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return

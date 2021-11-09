@@ -5,13 +5,13 @@ import (
 	"strings"
 )
 
-func (s *ab57) StartUrl() []string {
+func (s ab57) StartUrl() []string {
 	return []string{
 		"http://ab57.ru/downloads/proxyold.txt",
 	}
 }
 
-func (s *ab57) GetReferer() string {
+func (s ab57) GetReferer() string {
 	return "http://ab57.ru/"
 }
 
@@ -19,19 +19,19 @@ type ab57 struct {
 	Spider
 }
 
-func (s *ab57) Cron() string {
+func (s ab57) Cron() string {
 	return "@every 2m"
 }
 
-func (s *ab57) Name() string {
+func (s ab57) Name() string {
 	return "ab57"
 }
 
-func (s *ab57) Run() {
+func (s ab57) Run() {
 	getProxy(s)
 }
 
-func (s *ab57) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s ab57) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	proxyString := strings.Split(body, "\r\n")
 	for _, proxy := range proxyString {
 		if strings.Contains(proxy, ":") {

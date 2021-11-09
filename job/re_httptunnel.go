@@ -7,13 +7,20 @@ import (
 	"strings"
 )
 
-func (s *httptunnel) StartUrl() []string {
+func init() {
+	spider := httptunnel{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
+func (s httptunnel) StartUrl() []string {
 	return []string{
 		"http://www.httptunnel.ge/ProxyListForFree.aspx",
 	}
 }
 
-func (s *httptunnel) GetReferer() string {
+func (s httptunnel) GetReferer() string {
 	return "http://www.httptunnel.ge/"
 }
 
@@ -21,19 +28,19 @@ type httptunnel struct {
 	Spider
 }
 
-func (s *httptunnel) Cron() string {
+func (s httptunnel) Cron() string {
 	return "@every 5m"
 }
 
-func (s *httptunnel) Name() string {
+func (s httptunnel) Name() string {
 	return "httptunnel"
 }
 
-func (s *httptunnel) Run() {
+func (s httptunnel) Run() {
 	getProxy(s)
 }
 
-func (s *httptunnel) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s httptunnel) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	reg := regexp.MustCompile(util.RegProxy)
 	rs := reg.FindAllString(body, -1)
 

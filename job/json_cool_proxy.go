@@ -9,33 +9,40 @@ import (
 	"github.com/phpgao/proxy_pool/model"
 )
 
+func init() {
+	spider := coolProxy{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
 type coolProxy struct {
 	Spider
 }
 
-func (s *coolProxy) StartUrl() []string {
+func (s coolProxy) StartUrl() []string {
 	return []string{
 		"https://cool-proxy.net/proxies.json",
 	}
 }
 
-func (s *coolProxy) GetReferer() string {
+func (s coolProxy) GetReferer() string {
 	return "https://cool-proxy.net"
 }
 
-func (s *coolProxy) Run() {
+func (s coolProxy) Run() {
 	getProxy(s)
 }
 
-func (s *coolProxy) Cron() string {
+func (s coolProxy) Cron() string {
 	return "@every 5m"
 }
 
-func (s *coolProxy) Name() string {
+func (s coolProxy) Name() string {
 	return "cool_proxy"
 }
 
-func (s *coolProxy) TimeOut() int {
+func (s coolProxy) TimeOut() int {
 	return 60
 }
 
@@ -52,7 +59,7 @@ type coolProxyJson struct {
 	DownloadSpeedAverage float64 `json:"download_speed_average"`
 }
 
-func (s *coolProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s coolProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	var coolProxies []coolProxyJson
 	err = json.Unmarshal([]byte(body), &coolProxies)
 	if err != nil {

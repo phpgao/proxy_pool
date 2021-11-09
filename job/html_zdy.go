@@ -12,11 +12,18 @@ import (
 	"time"
 )
 
+func init() {
+	spider := zdy{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
 type zdy struct {
 	Spider
 }
 
-func (s *zdy) Fetch(proxyURL string, useProxy bool) (body string, err error) {
+func (s zdy) Fetch(proxyURL string, useProxy bool) (body string, err error) {
 	if s.RandomDelay() {
 		time.Sleep(time.Duration(rand.Intn(6)) * time.Second)
 	}
@@ -56,32 +63,32 @@ func (s *zdy) Fetch(proxyURL string, useProxy bool) (body string, err error) {
 	return
 }
 
-func (s *zdy) StartUrl() []string {
+func (s zdy) StartUrl() []string {
 	return []string{
 		"https://www.zdaye.com/FreeIPList.html",
 	}
 }
 
-func (s *zdy) Enabled() bool {
+func (s zdy) Enabled() bool {
 	return util.ServerConf.ChromeWS != ""
 }
-func (s *zdy) Cron() string {
+func (s zdy) Cron() string {
 	return "@every 5m"
 }
 
-func (s *zdy) GetReferer() string {
-	return "https://www.zdaye.com"
+func (s zdy) GetReferer() string {
+	return "https://www.zdaye.com/Free/"
 }
 
-func (s *zdy) Run() {
+func (s zdy) Run() {
 	getProxy(s)
 }
 
-func (s *zdy) Name() string {
+func (s zdy) Name() string {
 	return "zdy"
 }
 
-func (s *zdy) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s zdy) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return

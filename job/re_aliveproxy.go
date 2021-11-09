@@ -7,7 +7,14 @@ import (
 	"strings"
 )
 
-func (s *aliveProxy) StartUrl() []string {
+func init() {
+	spider := aliveProxy{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
+func (s aliveProxy) StartUrl() []string {
 	return []string{
 		"http://aliveproxy.com/proxy-list-port-8080/",
 		"http://aliveproxy.com/high-anonymity-proxy-list/",
@@ -26,7 +33,7 @@ func (s *aliveProxy) StartUrl() []string {
 	}
 }
 
-func (s *aliveProxy) GetReferer() string {
+func (s aliveProxy) GetReferer() string {
 	return "http://aliveproxy.com"
 }
 
@@ -34,19 +41,19 @@ type aliveProxy struct {
 	Spider
 }
 
-func (s *aliveProxy) Cron() string {
+func (s aliveProxy) Cron() string {
 	return "@every 5m"
 }
 
-func (s *aliveProxy) Name() string {
+func (s aliveProxy) Name() string {
 	return "aliveproxy"
 }
 
-func (s *aliveProxy) Run() {
+func (s aliveProxy) Run() {
 	getProxy(s)
 }
 
-func (s *aliveProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s aliveProxy) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	reg := regexp.MustCompile(util.RegProxy)
 	rs := reg.FindAllString(body, -1)
 

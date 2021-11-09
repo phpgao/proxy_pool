@@ -7,11 +7,18 @@ import (
 	"strings"
 )
 
+func init() {
+	spider := nimadaili{}
+	if spider.Enabled() {
+		register(spider)
+	}
+}
+
 type nimadaili struct {
 	Spider
 }
 
-func (s *nimadaili) StartUrl() []string {
+func (s nimadaili) StartUrl() []string {
 	var u []string
 	for _, d := range []string{"gaoni", "http", "https", "putong"} {
 		for i := 1; i < 5; i++ {
@@ -21,23 +28,23 @@ func (s *nimadaili) StartUrl() []string {
 	return u
 }
 
-func (s *nimadaili) Cron() string {
+func (s nimadaili) Cron() string {
 	return "@every 2m"
 }
 
-func (s *nimadaili) GetReferer() string {
+func (s nimadaili) GetReferer() string {
 	return "http://www.nimadaili.com/"
 }
 
-func (s *nimadaili) Run() {
+func (s nimadaili) Run() {
 	getProxy(s)
 }
 
-func (s *nimadaili) Name() string {
+func (s nimadaili) Name() string {
 	return "nimadaili"
 }
 
-func (s *nimadaili) Parse(body string) (proxies []*model.HttpProxy, err error) {
+func (s nimadaili) Parse(body string) (proxies []*model.HttpProxy, err error) {
 	doc, err := htmlquery.Parse(strings.NewReader(body))
 	if err != nil {
 		return
